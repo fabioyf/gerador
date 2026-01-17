@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V6 FINAL</title>
+    <title>DARCK METODOS - V7 ULTIMATE</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -48,19 +48,18 @@
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-        <div id="lista">Conectando ao Firebase...</div>
+        <div id="lista">Conectando...</div>
     </div>
 
 <script>
     const BANCOS_PADRAO = ["Nubank", "Mercado Pago", "PagBank", "PicPay", "Inter", "C6 Bank", "Caixa"];
-    const DDDs = ["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","72","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"];
-    
+    const DDDs = ["11","19","21","31","41","51","61","71","81","91"];
     const SENHA_ACESSO = "2323";
     const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
 
-    const nomesM = ["Gabriel", "Lucas", "Matheus", "Pedro", "Rafael", "João", "Felipe", "Bruno", "Tiago", "Rodrigo", "André", "Leonardo", "Vinícius", "Eduardo", "Diego"];
-    const nomesF = ["Ana", "Maria", "Juliana", "Camila", "Fernanda", "Beatriz", "Larissa", "Patrícia", "Aline", "Letícia", "Amanda", "Vanessa", "Jessica", "Isabela"];
-    const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida", "Costa", "Gomes", "Martins"];
+    const nomesM = ["Gabriel", "Lucas", "Matheus", "Pedro", "Rafael", "João", "Felipe", "Bruno", "Tiago", "Rodrigo"];
+    const nomesF = ["Ana", "Maria", "Juliana", "Camila", "Fernanda", "Beatriz", "Larissa", "Patrícia", "Aline", "Letícia"];
+    const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida"];
 
     function verificarSenha() {
         if (document.getElementById("senhaInput").value === SENHA_ACESSO) {
@@ -97,13 +96,13 @@
                     {l: 'Nome', v: p.nome, k: 'nome', t: 'NOME'},
                     {l: 'CPF', v: p.cpf, k: 'cpf', t: 'LIMPO'},
                     {l: 'Telefone', v: p.telefone, k: 'telefone', t: 'LIMPO'},
+                    {l: 'Chave PIX', v: p.pix || p.cpf, k: 'pix', t: 'LIMPO'},
                     {l: 'Login', v: p.login, k: 'login', t: 'PADRAO'},
                     {l: 'Senha Forte', v: p.senhaForte, k: 'senhaForte', t: 'PADRAO'},
                     {l: 'Senha Simples', v: p.senhaSimples, k: 'senhaSimples', t: 'PADRAO'},
                     {l: 'Saque', v: p.senhaSaque, k: 'senhaSaque', t: 'PADRAO'}
                 ];
 
-                // Layout do Banco com Seleção E Edição manual
                 let htmlCampos = `<p><b>Banco:</b> 
                     <select class="bank-selector" onchange="atualizar('${id}', 'banco', this.value)">
                         <option value="${p.banco}">${p.banco}</option>
@@ -135,8 +134,7 @@
 
         window.gerarPacote = async () => {
             const btn = document.getElementById("btnGerar");
-            btn.innerText = "PROCESSANDO..."; btn.disabled = true;
-
+            btn.innerText = "GERANDO..."; btn.disabled = true;
             const gen = document.getElementById("generoGen").value;
             const listaN = gen === 'masculino' ? nomesM : nomesF;
             
@@ -149,12 +147,13 @@
             }
 
             const nomeFinal = `${random(listaN)} ${random(sobrenomes)} ${random(sobrenomes)}`;
-            const ddd = random(DDDs);
+            const ddd = random(["11","21","31","41","51","61","71","81","91","19"]);
 
             const novo = {
                 nome: nomeFinal,
                 cpf: novoCpf,
                 telefone: `(${ddd}) 9${Math.floor(10000000 + Math.random() * 90000000)}`,
+                pix: novoCpf,
                 login: nomeFinal.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 8999),
                 senhaForte: gerarSenha(12, true),
                 senhaSimples: gerarSenha(10, false),
@@ -172,26 +171,24 @@
                 const blob = new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"});
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blob);
-                a.download = `backup_nuvem_${Date.now()}.json`; a.click();
+                a.download = `backup_contas.json`; a.click();
             });
         };
 
         window.importarBanco = (e) => {
             const reader = new FileReader();
             reader.onload = (ev) => {
-                try {
-                    const dados = JSON.parse(ev.target.result);
-                    const loop = dados.import_manual || dados;
-                    Object.keys(loop).forEach(k => db.ref("pacotes").push(loop[k]));
-                    alert("Importado!");
-                } catch(err) { alert("Arquivo inválido!"); }
+                const dados = JSON.parse(ev.target.result);
+                const loop = dados.import_manual || dados;
+                Object.keys(loop).forEach(k => db.ref("pacotes").push(loop[k]));
+                alert("Importado!");
             };
             reader.readAsText(e.target.files[0]);
         };
 
         window.atualizar = (id, campo, valor) => db.ref(`pacotes/${id}`).update({[campo]: valor});
         window.excluir = (id) => { if(confirm("Apagar?")) db.ref(`pacotes/${id}`).remove(); };
-        window.limparBanco = () => { if(confirm("Zerar Nuvem?")) db.ref("pacotes").remove(); };
+        window.limparBanco = () => { if(confirm("Zerar tudo?")) db.ref("pacotes").remove(); };
     }
 
     function gerarSenha(t, s) {
@@ -217,13 +214,11 @@
     function copiar(btn, tipo) {
         let span = btn.parentElement.querySelector("span");
         let t = span ? span.innerText : btn.parentElement.querySelector("select").value;
-        
         if (tipo === 'NOME') {
             t = t.replace(/^\d+\s+/, '');
         } else if (tipo === 'LIMPO') {
             t = t.replace(/\D/g, '');
         }
-
         navigator.clipboard.writeText(t);
         const o = btn.innerText; btn.innerText = "OK";
         setTimeout(() => btn.innerText = o, 800);
