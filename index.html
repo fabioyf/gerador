@@ -6,7 +6,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; --green: #00ff41; }
+        :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
@@ -30,21 +30,7 @@
         .btn-edit { background: #222; color: #007bff; border: 1px solid #007bff33; }
         .btn-del { background: #3d0000; color: #ff4d4d; }
         select { padding: 8px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; cursor: pointer; font-size: 0.8rem; }
-        
-        .input-lembrete {
-            background: transparent;
-            border: 1px solid var(--green);
-            color: var(--green);
-            border-radius: 4px;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            font-family: monospace;
-            width: 180px;
-            outline: none;
-        }
-        .input-lembrete:focus { background: rgba(0, 255, 65, 0.05); }
-
-        .bank-selector { color: #fff !important; font-weight: bold; width: 150px; }
+        .bank-selector { color: #00ff41 !important; border-color: #00ff41 !important; font-weight: bold; width: 150px; }
     </style>
 </head>
 <body>
@@ -99,6 +85,7 @@
     }
 
     function gerarTelefoneBrasil() {
+        // Todos os DDDs reais do Brasil
         const ddds = [11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99];
         const ddd = ddds[Math.floor(Math.random() * ddds.length)];
         const p1 = Math.floor(Math.random() * 9000) + 1000;
@@ -124,26 +111,11 @@
         return res;
     }
 
-    // LÓGICA DE CATEGORIA MELHORADA
-    function detectarBancoPrincipal(valorBanco, lembrete) {
-        // Se o banco selecionado estiver na lista, ele manda na categoria
-        if (valorBanco && valorBanco !== "SELECIONE") {
-            const v = valorBanco.toLowerCase();
-            for (let b of BANCOS_LISTA) { 
-                if (v.includes(b.toLowerCase())) return b; 
-            }
-        }
-        
-        // Se o banco for SELECIONE mas houver lembrete, verifica se o lembrete tem nome de banco
-        if (lembrete) {
-            const l = lembrete.toLowerCase();
-            for (let b of BANCOS_LISTA) { 
-                if (l.includes(b.toLowerCase())) return b; 
-            }
-            return "Personalizado";
-        }
-        
-        return "Outros";
+    function detectarBancoPrincipal(valorBanco) {
+        if (!valorBanco || valorBanco === "SELECIONE") return "Outros";
+        const v = valorBanco.toLowerCase();
+        for (let b of BANCOS_LISTA) { if (v.includes(b.toLowerCase())) return b; }
+        return "Personalizado";
     }
 
     function renderizarLista() {
@@ -156,8 +128,7 @@
         BANCOS_LISTA.forEach(b => counts[b] = 0);
 
         let arrayContas = Object.keys(dadosGlobais).map(id => {
-            const p = dadosGlobais[id];
-            return { id, ...p, bPrincipal: detectarBancoPrincipal(p.bancoSelect, p.bancoCustom) };
+            return { id, ...dadosGlobais[id], bPrincipal: detectarBancoPrincipal(dadosGlobais[id].banco) };
         });
 
         arrayContas.sort((a, b) => {
@@ -198,17 +169,16 @@
             div.innerHTML = `
                 <div class="btn-bonus ${p.bonus ? 'coletado' : ''}" onclick="atualizar('${p.id}', 'bonus', ${!p.bonus})">BÔNUS</div>
                 <p><b>Banco:</b> 
-                    <select class="bank-selector" onchange="atualizar('${p.id}', 'bancoSelect', this.value)">
-                        <option value="SELECIONE" ${p.bancoSelect === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
-                        ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.bancoSelect === b ? 'selected' : ''}>${b}</option>`).join('')}
+                    <select class="bank-selector" onchange="atualizar('${p.id}', 'banco', this.value)">
+                        <option value="SELECIONE" ${p.banco === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
+                        ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco.includes(b) ? 'selected' : ''}>${b}</option>`).join('')}
                     </select>
-                    <input type="text" class="input-lembrete" placeholder="Lembrete / Custom" 
-                        value="${p.bancoCustom || ''}" 
-                        onchange="atualizar('${p.id}', 'bancoCustom', this.value)">
+                    <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button>
                 </p>
                 <p><b>Nome:</b> <span>${nExibicao} ${p.nome}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${p.nome}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
                 <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'telefone', '${p.telefone}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Chave PIX:</b> <span>${p.pix || p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'pix', '${p.pix || p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
                 <p><b>Login:</b> <span>${p.login}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'login', '${p.login}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>Senha F:</b> <span style="color:#ff00ff">${p.senhaForte}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaForte', '${p.senhaForte}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>Senha S:</b> <span style="color:#00ffff">${p.senhaSimples}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSimples', '${p.senhaSimples}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
@@ -242,7 +212,7 @@
             nome: nomeFinal, cpf: gerarCpfReal(), pix: "CPF", telefone: gerarTelefoneBrasil(),
             login: nomeFinal.split(' ')[0].toLowerCase() + Math.floor(Math.random()*9999),
             senhaForte: gerarSenhaForte(16), senhaSimples: gerarSenhaSimples(12), 
-            senhaSaque: Math.floor(100000 + Math.random() * 899999), bancoSelect: "SELECIONE", bancoCustom: "", mae: false, bonus: false
+            senhaSaque: Math.floor(100000 + Math.random() * 899999), banco: "SELECIONE", mae: false, bonus: false
         });
         btn.innerText = "GERAR CONTA ÚNICA"; btn.disabled = false;
     };
