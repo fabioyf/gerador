@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>GERADOR DARCK - NUVEM</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; padding: 20px; }
+        .controls { background: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; }
+        .pacote { background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #007bff; }
+        .pacote.mae { border-left-color: #ff9800; background: #2d230b; }
+        p { margin: 8px 0; border-bottom: 1px solid #333; display: flex; align-items: center; }
+        button { cursor: pointer; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; }
+        .btn-gen { background: #007bff; color: white; }
+        .btn-copy { background: #6c757d; color: white; margin-left: auto; }
+        .btn-del { background: #dc3545; color: white; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>GERADOR DARCK - <span style="color: #28a745;">NUVEM ATIVA</span></h2>
+
+    <div class="controls">
+        <select id="genero" style="padding: 8px;">
+            <option value="masculino">Masculino</option>
+            <option value="feminino">Feminino</option>
+        </select>
+        <button class="btn-gen" onclick="gerar()">Gerar Novo</button>
+        <button onclick="limparBanco()" style="background:#444; color:white;">Limpar Nuvem</button>
+    </div>
+
+    <div id="lista">Conectando ao Firebase...</div>
+
+<script>
+    // Conexão com o seu banco de dados
+    const firebaseConfig = {
+        databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" 
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Sorteio de dados
+    const nomesM = ["Lucas", "Gabriel", "Matheus", "Pedro", "João", "Rafael", "Guilherme", "Vitor"];
+    const nomesF = ["Maria", "Ana", "Juliana", "Patrícia", "Camila", "Fernanda", "Beatriz", "Clara"];
+    const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Almeida"];
+
+    // Sincronização em tempo real
+    db.ref("pacotes").on("value", (snapshot) => {
+        const listaDiv = document.getElementById("lista");
+        listaDiv.innerHTML = "";
+        const data = snapshot.val();
+        if (data) {
+            Object.keys(data).reverse().forEach(id => {
+                const p = data[id];
+                const div = document.createElement("div");
+                div.className = `pacote ${p.mae ? 'mae' : ''}`;
+                div.innerHTML = `
+                    <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this, 'Nome')">Copiar</button></p>
+                    <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'CPF')">Copiar</button></p>
+                    <p><b>Senha:</b> <span>${p.senha}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
+                    <button style="background:${p.mae?'#ff9800':'#444'}; color:white;" onclick="toggleMae('${id}', ${p.mae})">
+                        ${p.mae ? 'Conta Mãe ✓' : 'Marcar como Mãe'}
+                    </button>
+                    <button class="btn-del" onclick="excluir('${id}')">Excluir</button>
+                `;
+                listaDiv.appendChild(div);
+            });
+        }
+    });
+
+    function gerar() {
+        const gen = document.getElementById("genero").value;
+        const lista = gen === "masculino" ? nomesM : nomesF;
+        const novo = {
+            nome: `${lista[Math.floor(Math.random()*lista.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]}`,
+            cpf: Math.random().toString().slice(2,13).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"),
+            senha: Math.random().toString(36).slice(-8).toUpperCase(),
+            mae: false
+        };
+        db.ref("pacotes").push(novo);
+    }
+
+    function copiar(btn, tipo) {
+        let texto = btn.parentElement.querySelector("span").innerText;
+        if (tipo === 'Nome') texto = texto.replace(/[0-9]/g, '').trim(); // Remove números do nome
+        if (tipo === 'CPF') texto = texto.replace(/\D/g, ''); // Remove pontos do CPF
+        
+        const el = document.createElement('textarea');
+        el.value = texto;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        
+        btn.innerText = "Copiado!";
+        setTimeout(() => btn.innerText = "Copiar", 1000);
+    }
+
+    function toggleMae(id, status) { db.ref("pacotes/" + id).update({ mae: !status }); }
+    function excluir(id) { if(confirm("Excluir?")) db.ref("pacotes/" + id).remove(); }
+    function limparBanco() { if(confirm("Limpar TUDO?")) db.ref("pacotes").remove(); }
+</script>
+</body>
+</html>
