@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - PREMIUM CLOUD</title>
+    <title>DARCK METODOS - INFINITE CLOUD</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -10,68 +10,58 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; box-shadow: 0 4px 20px rgba(0,0,0,0.4); justify-content: center; }
-        .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); transition: 0.3s; position: relative; }
+        .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; justify-content: center; margin-bottom: 20px;}
+        .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); position: relative; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
-        p { margin: 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-        b { color: var(--primary); width: 150px; font-size: 0.85rem; text-transform: uppercase; }
+        p { margin: 10px 0; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+        b { color: var(--primary); width: 130px; font-size: 0.8rem; text-transform: uppercase; }
         span { font-family: monospace; font-size: 1rem; color: #fff; flex-grow: 1; }
-        button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 15px; font-weight: bold; transition: 0.2s; font-size: 0.8rem; }
-        .btn-gen { background: var(--primary); color: white; padding: 12px 25px; }
-        .btn-copy { background: #333; color: #ccc; }
-        .btn-copy:hover { background: var(--primary); color: white; }
-        .btn-edit { background: #222; color: #888; border: 1px solid #333; font-size: 0.7rem; }
-        .btn-del { background: #3d0000; color: #ff4d4d; width: 100%; margin-top: 15px; }
+        button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 12px; font-weight: bold; transition: 0.2s; }
+        .btn-gen { background: var(--primary); color: white; padding: 12px 20px; }
+        .btn-copy { background: #333; color: #ccc; font-size: 0.7rem; }
+        .btn-del { background: #3d0000; color: #ff4d4d; }
+        select.bank-selector { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 5px; border-radius: 4px; }
         input, select { padding: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: white; }
-        #senhaInput { width: 200px; text-align: center; font-size: 1.5rem; border: 2px solid var(--primary); letter-spacing: 8px; }
     </style>
 </head>
 <body>
 
     <div id="bloqueio">
-        <h1 style="color:var(--primary); margin:0;">DARCK METODOS</h1>
-        <p style="color:#555; margin-bottom:20px;">SENHA: 2323</p>
-        <input type="password" id="senhaInput" autofocus>
-        <button class="btn-gen" style="margin-top:15px; width:220px" onclick="verificarSenha()">ENTRAR</button>
-        <p id="erro" style="color: #ff4d4d; font-weight: bold; margin-top: 15px;"></p>
+        <h1 style="color:var(--primary)">DARCK METODOS</h1>
+        <input type="password" id="senhaInput" placeholder="Senha" style="text-align:center">
+        <button class="btn-gen" style="margin-top:10px" onclick="verificarSenha()">ENTRAR</button>
     </div>
 
     <div id="conteudo">
-        <div class="header">
-            <h2>PAINEL DE CONTAS <span style="color:var(--primary)">NUVEM</span></h2>
-        </div>
-
         <div class="controls">
-            <select id="genero">
+            <select id="generoGen">
                 <option value="masculino">Masculino</option>
                 <option value="feminino">Feminino</option>
             </select>
-            <button class="btn-gen" onclick="gerar()">GERAR NOVO</button>
-            <button style="background:#6f42c1; color:white;" onclick="exportarBanco()">EXPORTAR BACKUP</button>
-            <button style="background:#444; color:white;" onclick="document.getElementById('fileIn').click()">IMPORTAR BACKUP</button>
-            <input type="file" id="fileIn" style="display:none" accept=".json" onchange="importarBanco(event)">
+            <button class="btn-gen" id="btnGerar" onclick="gerarPacote()">GERAR CONTA ÚNICA</button>
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-
-        <div id="lista" style="margin-top: 30px;">Conectando ao Firebase...</div>
+        <div id="lista">Conectando...</div>
     </div>
 
 <script>
-    const SENHA_ACESSO = "2323"; 
+    // ADICIONE OU REMOVA BANCOS AQUI
+    const BANCOS = ["Nubank", "Mercado Pago", "PagBank", "PicPay", "Inter", "C6 Bank", "Caixa"];
+    
+    const SENHA_ACESSO = "2323";
     const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
+
+    const nomesM = ["Gabriel", "Lucas", "Matheus", "Pedro", "Rafael", "João", "Felipe", "Bruno", "Tiago", "Rodrigo", "André", "Leonardo", "Vinícius", "Eduardo", "Diego", "Samuel"];
+    const nomesF = ["Ana", "Maria", "Juliana", "Camila", "Fernanda", "Beatriz", "Larissa", "Patrícia", "Aline", "Letícia", "Amanda", "Vanessa", "Jessica", "Isabela", "Giovanna"];
+    const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida", "Costa", "Nascimento", "Gomes", "Martins", "Araújo"];
 
     function verificarSenha() {
         if (document.getElementById("senhaInput").value === SENHA_ACESSO) {
             document.getElementById("bloqueio").style.display = "none";
             document.getElementById("conteudo").style.display = "block";
             iniciarApp();
-        } else {
-            document.getElementById("erro").innerText = "SENHA INVÁLIDA";
         }
     }
-
-    document.getElementById("senhaInput").addEventListener("keyup", (e) => { if(e.key === "Enter") verificarSenha(); });
 
     function iniciarApp() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -81,121 +71,93 @@
             const listaDiv = document.getElementById("lista");
             listaDiv.innerHTML = "";
             const data = snapshot.val();
-            if (!data) return listaDiv.innerHTML = "<center>Nenhum dado na nuvem.</center>";
+            if (!data) return listaDiv.innerHTML = "<center>Nenhum dado salvo.</center>";
 
             Object.keys(data).reverse().forEach(id => {
                 const p = data[id];
                 const div = document.createElement("div");
                 div.className = `pacote ${p.mae ? 'mae' : ''}`;
-                
-                const campos = [
-                    {l: 'Nome', v: p.nome, k: 'nome'},
-                    {l: 'CPF', v: p.cpf, k: 'cpf'},
-                    {l: 'Telefone', v: p.telefone, k: 'telefone'},
-                    {l: 'Login', v: p.login, k: 'login'},
-                    {l: 'Senha Forte', v: p.senhaForte, k: 'senhaForte'},
-                    {l: 'Senha Simples', v: p.senhaSimples, k: 'senhaSimples'},
-                    {l: 'Senha Saque', v: p.senhaSaque, k: 'senhaSaque'}
-                ];
-
-                div.innerHTML = campos.map(c => `
-                    <p>
-                        <b>${c.l}:</b> <span>${c.v || '---'}</span>
-                        <button class="btn-edit" onclick="editar('${id}', '${c.k}', '${c.v}')">Editar</button>
-                        <button class="btn-copy" onclick="copiar(this, '${c.l}')">Copiar</button>
-                    </p>`).join('') + `
-                    <div style="display:flex; gap:10px; margin-top:15px">
-                        <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="toggleMae('${id}', ${p.mae})">
-                            ${p.mae ? '★ CONTA MÃE ATIVA' : 'MARCAR COMO MÃE'}
-                        </button>
-                        <button class="btn-del" style="flex:1; margin:0" onclick="excluir('${id}')">EXCLUIR</button>
+                div.innerHTML = `
+                    <p><b>Banco:</b> 
+                        <select class="bank-selector" onchange="atualizar('${id}', 'banco', this.value)">
+                            ${BANCOS.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('')}
+                        </select>
+                    </p>
+                    <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                    <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'CPF')">Copiar</button></p>
+                    <p><b>Login:</b> <span>${p.login}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                    <p><b>Senha:</b> <span>${p.senhaForte}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                    <p><b>Saque:</b> <span>${p.senhaSaque}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                    <div style="display:flex; gap:10px; margin-top:10px">
+                        <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="atualizar('${id}', 'mae', ${!p.mae})">${p.mae?'★ MÃE ATIVA':'MARCAR MÃE'}</button>
+                        <button class="btn-del" onclick="excluir('${id}')">EXCLUIR</button>
                     </div>`;
                 listaDiv.appendChild(div);
             });
         });
 
-        window.gerar = () => {
-            const n = "Gerando..."; // Simplificado para o exemplo
+        window.gerarPacote = async () => {
+            const btn = document.getElementById("btnGerar");
+            btn.innerText = "VERIFICANDO UNICIDADE...";
+            btn.disabled = true;
+
+            const gen = document.getElementById("generoGen").value;
+            const listaN = gen === 'masculino' ? nomesM : nomesF;
+            
+            // Gerar dados únicos
+            let cpfUnico = false;
+            let novoCpf;
+            
+            // Loop de Proteção: Só sai quando o CPF for realmente novo
+            while (!cpfUnico) {
+                novoCpf = gerarCpfReal();
+                const snap = await db.ref("pacotes").orderByChild("cpf").equalTo(novoCpf).once("value");
+                if (!snap.exists()) cpfUnico = true;
+            }
+
+            const nomeComp = `${random(listaN)} ${random(sobrenomes)} ${random(sobrenomes)}`;
+            const login = nomeComp.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 9000);
+
             const novo = {
-                nome: "Novo Usuario " + Math.floor(Math.random()*100),
-                cpf: "000.000.000-00",
-                telefone: "119" + Math.random().toString().slice(2,10),
-                login: "user" + Math.floor(Math.random()*999),
-                senhaForte: "S@nha" + Math.floor(Math.random()*99),
-                senhaSimples: "SENHA123",
-                senhaSaque: "123456",
+                nome: nomeComp,
+                cpf: novoCpf,
+                telefone: "119" + Math.floor(10000000 + Math.random() * 90000000),
+                login: login,
+                senhaForte: Math.random().toString(36).slice(-10).toUpperCase(),
+                senhaSaque: Math.floor(100000 + Math.random() * 900000),
+                banco: BANCOS[0],
                 mae: false
             };
-            db.ref("pacotes").push(novo);
+
+            await db.ref("pacotes").push(novo);
+            btn.innerText = "GERAR CONTA ÚNICA";
+            btn.disabled = false;
         };
 
-        window.editar = (id, campo, valor) => {
-            const novo = prompt(`Editar ${campo}:`, valor);
-            if (novo !== null) db.ref(`pacotes/${id}`).update({ [campo]: novo });
-        };
-
-        window.toggleMae = (id, status) => db.ref(`pacotes/${id}`).update({ mae: !status });
-        window.excluir = (id) => { if(confirm("Excluir?")) db.ref(`pacotes/${id}`).remove(); };
-        window.limparBanco = () => { if(confirm("Limpar nuvem?")) db.ref("pacotes").remove(); };
-
-        window.exportarBanco = () => {
-            db.ref("pacotes").once("value", (snapshot) => {
-                const blob = new Blob([JSON.stringify(snapshot.val())], { type: "application/json" });
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = `backup_nuvem.json`; a.click();
-            });
-        };
-
-        // --- IMPORTAÇÃO INTELIGENTE (ACEITA ARQUIVO ANTIGO E NOVO) ---
-        window.importarBanco = (e) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const dados = JSON.parse(event.target.result);
-                    
-                    // Se for backup do modelo ANTIGO (que tinha .html dentro)
-                    if (dados.html) {
-                        const tempDiv = document.createElement("div");
-                        tempDiv.innerHTML = dados.html;
-                        const pacotesAntigos = tempDiv.querySelectorAll(".pacote");
-                        
-                        pacotesAntigos.forEach(p => {
-                            const extrair = (label) => {
-                                const el = Array.from(p.querySelectorAll("p")).find(item => item.innerText.includes(label));
-                                return el ? el.querySelector("span").innerText : "";
-                            };
-
-                            db.ref("pacotes").push({
-                                nome: extrair("Nome"),
-                                cpf: extrair("CPF"),
-                                telefone: extrair("Telefone"),
-                                login: extrair("Login"),
-                                senhaForte: extrair("Senha"),
-                                senhaSimples: extrair("Sem Símbolos") || extrair("Senha"),
-                                senhaSaque: extrair("Saque"),
-                                mae: p.classList.contains("mae")
-                            });
-                        });
-                        alert("Backup ANTIGO convertido e importado para a nuvem!");
-                    } 
-                    // Se for o backup NOVO (JSON direto)
-                    else {
-                        Object.keys(dados).forEach(k => db.ref("pacotes").push(dados[k]));
-                        alert("Backup sincronizado com a nuvem!");
-                    }
-                } catch(err) { alert("Arquivo inválido."); console.log(err); }
-            };
-            reader.readAsText(e.target.files[0]);
-        };
+        window.atualizar = (id, campo, valor) => db.ref(`pacotes/${id}`).update({ [campo]: valor });
+        window.excluir = (id) => db.ref(`pacotes/${id}`).remove();
+        window.limparBanco = () => { if(confirm("Zerar Nuvem?")) db.ref("pacotes").remove(); };
     }
 
+    function gerarCpfReal() {
+        const n = () => Math.floor(Math.random() * 9);
+        let n1=n(), n2=n(), n3=n(), n4=n(), n5=n(), n6=n(), n7=n(), n8=n(), n9=n();
+        let d1 = n9*2+n8*3+n7*4+n6*5+n5*6+n4*7+n3*8+n2*9+n1*10;
+        d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0;
+        let d2 = d1*2+n9*3+n8*4+n7*5+n6*6+n5*7+n4*8+n3*9+n2*10+n1*11;
+        d2 = 11 - (d2 % 11); if (d2 >= 10) d2 = 0;
+        return `${n1}${n2}${n3}.${n4}${n5}${n6}.${n7}${n8}${n9}-${d1}${d2}`;
+    }
+
+    function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
     function copiar(btn, tipo) {
-        let valor = btn.parentElement.querySelector("span").innerText;
-        if (tipo === 'CPF') valor = valor.replace(/\D/g, '');
-        navigator.clipboard.writeText(valor);
-        btn.innerText = "OK!";
-        setTimeout(() => btn.innerText = "Copiar", 800);
+        let txt = btn.parentElement.querySelector("span").innerText;
+        if(tipo === 'CPF') txt = txt.replace(/\D/g, '');
+        navigator.clipboard.writeText(txt);
+        const original = btn.innerText;
+        btn.innerText = "OK";
+        setTimeout(() => btn.innerText = original, 800);
     }
 </script>
 </body>
