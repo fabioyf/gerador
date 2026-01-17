@@ -2,77 +2,74 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>GERADOR DE DADOS - V31</title>
+    <title>DARCK METODOS - V25 FINAL BOSS</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; --green: #00ff41; }
+        :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
-        
-        .count-badge { border: 1px solid var(--primary); color: var(--primary); padding: 8px 20px; border-radius: 50px; font-size: 1rem; display: inline-block; margin-bottom: 15px; }
+        .header-stats { text-align: center; margin-bottom: 15px; }
+        .count-badge { background: var(--primary); color: white; padding: 8px 20px; border-radius: 50px; font-size: 1rem; font-weight: bold; display: inline-block; }
         .tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 10px 0; border-bottom: 1px solid #222; }
         .tab-btn { background: #222; color: #888; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
+        .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; justify-content: center; margin-bottom: 20px; }
         .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); position: relative; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
-        
-        .divisor-banco { background: #333; color: #fff; padding: 10px 15px; border-radius: 5px; margin: 25px 0 10px 0; font-size: 0.9rem; text-transform: uppercase; border-left: 5px solid var(--primary); }
-
+        .divisor-banco { background: #333; color: #fff; padding: 10px 15px; border-radius: 5px; margin: 25px 0 10px 0; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; }
+        .btn-bonus { position: absolute; top: 15px; right: 15px; background: #fff; color: #000; padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        .btn-bonus.coletado { background: #28a745; color: #fff; }
         p { margin: 10px 0; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-        b { color: var(--primary); width: 100px; font-size: 0.75rem; text-transform: uppercase; font-weight: normal; }
-        span { font-family: monospace; font-size: 0.95rem; color: #fff; flex-grow: 1; }
-        
-        /* CAIXINHA VERDE PARA DIGITAR */
-        .input-banco-custom { 
-            background: transparent; 
-            border: 1px solid var(--green); 
-            color: var(--green); 
-            border-radius: 4px; 
-            padding: 4px 8px; 
-            font-size: 0.85rem; 
-            font-family: monospace;
-            width: 200px;
-            outline: none;
-        }
-        .input-banco-custom:focus { background: #00ff4111; }
-
-        button { cursor: pointer; border: none; border-radius: 6px; padding: 6px 10px; font-size: 0.7rem; font-weight: normal; }
-        .btn-gen { background: var(--primary); color: white; padding: 12px 20px; }
+        b { color: var(--primary); width: 130px; font-size: 0.75rem; text-transform: uppercase; }
+        span { font-family: monospace; font-size: 0.95rem; color: #fff; flex-grow: 1; word-break: break-all; }
+        button { cursor: pointer; border: none; border-radius: 6px; padding: 6px 10px; font-weight: bold; transition: 0.2s; font-size: 0.7rem; }
+        .btn-gen { background: var(--primary); color: white; padding: 12px 20px; font-size: 0.8rem; }
         .btn-copy { background: #333; color: #ccc; }
+        .btn-edit { background: #222; color: #007bff; border: 1px solid #007bff33; }
         .btn-del { background: #3d0000; color: #ff4d4d; }
-        
-        select { padding: 6px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; font-size: 0.8rem; width: 130px; }
+        select { padding: 8px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; cursor: pointer; font-size: 0.8rem; }
+        .bank-selector { color: #00ff41 !important; border-color: #00ff41 !important; font-weight: bold; width: 150px; }
     </style>
 </head>
 <body>
 
     <div id="bloqueio">
-        <h1 style="font-weight: normal; color: var(--primary);">DARCK METODOS</h1>
+        <h1 style="color:var(--primary)">DARCK METODOS</h1>
         <input type="password" id="senhaInput" placeholder="PIN" style="text-align:center">
-        <button class="btn-gen" style="margin-top:10px" onclick="verificarSenha()">ENTRAR</button>
+        <button class="btn-gen" style="margin-top:10px; width:180px" onclick="verificarSenha()">ENTRAR</button>
     </div>
 
     <div id="conteudo">
-        <center><div id="contador" class="count-badge">Contas: 0</div></center>
-        <div class="tabs-container" id="tabsCategorias"></div>
-        <div style="text-align:center; margin-bottom: 20px;">
-            <button class="btn-gen" onclick="gerarPacote()">GERAR NOVO DADO</button>
+        <div class="header-stats">
+            <div id="contador" class="count-badge">Contas na Nuvem: 0</div>
         </div>
-        <div id="lista">Sincronizando...</div>
+        <div class="tabs-container" id="tabsCategorias"></div>
+        <div class="controls">
+            <select id="generoGen">
+                <option value="masculino">Masculino</option>
+                <option value="feminino">Feminino</option>
+            </select>
+            <button class="btn-gen" id="btnGerar" onclick="gerarPacote()">GERAR CONTA ÚNICA</button>
+            <button onclick="exportarBanco()" style="background:#444; color:white;">EXPORTAR</button>
+            <button onclick="document.getElementById('fileIn').click()" style="background:#444; color:white;">IMPORTAR</button>
+            <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
+            <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
+        </div>
+        <div id="lista">Sincronizando Banco de Dados...</div>
     </div>
 
 <script>
     const BANCOS_LISTA = ["Nubank", "Mercado Pago", "PagBank", "PicPay", "Inter", "C6 Bank", "Caixa"];
+    const SENHA_ACESSO = "2323";
     const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
     
     let categoriaAtual = "TODOS";
     let dadosGlobais = {};
 
     function verificarSenha() {
-        if (document.getElementById("senhaInput").value === "2323") {
+        if (document.getElementById("senhaInput").value === SENHA_ACESSO) {
             document.getElementById("bloqueio").style.display = "none";
             document.getElementById("conteudo").style.display = "block";
             iniciarApp();
@@ -87,68 +84,105 @@
         });
     }
 
-    function detectarCategoria(texto) {
-        if (!texto || texto === "SELECIONE") return "Outros";
-        for (let b of BANCOS_LISTA) {
-            if (texto.toUpperCase().includes(b.toUpperCase())) return b;
-        }
+    function gerarTelefoneBrasil() {
+        // Todos os DDDs reais do Brasil
+        const ddds = [11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99];
+        const ddd = ddds[Math.floor(Math.random() * ddds.length)];
+        const p1 = Math.floor(Math.random() * 9000) + 1000;
+        const p2 = Math.floor(Math.random() * 9000) + 1000;
+        return `(${ddd}) 9${p1}-${p2}`;
+    }
+
+    function gerarSenhaForte(tamanho = 16) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()";
+        let res = "";
+        const randomValues = new Uint32Array(tamanho);
+        window.crypto.getRandomValues(randomValues);
+        for (let i = 0; i < tamanho; i++) res += chars[randomValues[i] % chars.length];
+        return res;
+    }
+
+    function gerarSenhaSimples(tamanho = 12) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let res = "";
+        const randomValues = new Uint32Array(tamanho);
+        window.crypto.getRandomValues(randomValues);
+        for (let i = 0; i < tamanho; i++) res += chars[randomValues[i] % chars.length];
+        return res;
+    }
+
+    function detectarBancoPrincipal(valorBanco) {
+        if (!valorBanco || valorBanco === "SELECIONE") return "Outros";
+        const v = valorBanco.toLowerCase();
+        for (let b of BANCOS_LISTA) { if (v.includes(b.toLowerCase())) return b; }
         return "Personalizado";
     }
 
     function renderizarLista() {
         const listaDiv = document.getElementById("lista");
         const tabsDiv = document.getElementById("tabsCategorias");
+        const contadorDiv = document.getElementById("contador");
         listaDiv.innerHTML = "";
         
         let counts = { TODOS: 0, Outros: 0, Personalizado: 0 };
         BANCOS_LISTA.forEach(b => counts[b] = 0);
 
         let arrayContas = Object.keys(dadosGlobais).map(id => {
-            const cat = detectarCategoria(dadosGlobais[id].banco);
-            return { id, ...dadosGlobais[id], categoria: cat };
+            return { id, ...dadosGlobais[id], bPrincipal: detectarBancoPrincipal(dadosGlobais[id].banco) };
         });
 
-        arrayContas.forEach(p => { counts.TODOS++; counts[p.categoria]++; });
-        document.getElementById("contador").innerText = `Contas: ${counts.TODOS}`;
+        arrayContas.sort((a, b) => {
+            if (a.bPrincipal < b.bPrincipal) return -1;
+            if (a.bPrincipal > b.bPrincipal) return 1;
+            return b.id.localeCompare(a.id);
+        });
 
-        let tabsHtml = `<button class="tab-btn ${categoriaAtual==='TODOS'?'active':''}" onclick="categoriaAtual='TODOS';renderizarLista()">TODOS (${counts.TODOS})</button>`;
-        BANCOS_LISTA.forEach(b => { if(counts[b] > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual===b?'active':''}" onclick="categoriaAtual='${b}';renderizarLista()">${b.toUpperCase()} (${counts[b]})</button>`; });
-        if(counts.Personalizado > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Personalizado'?'active':''}" onclick="categoriaAtual='Personalizado';renderizarLista()">PERS. (${counts.Personalizado})</button>`;
+        arrayContas.forEach(p => { counts.TODOS++; counts[p.bPrincipal]++; });
+        contadorDiv.innerText = `Contas na Nuvem: ${counts.TODOS}`;
+
+        let tabsHtml = `<button class="tab-btn ${categoriaAtual==='TODOS'?'active':''}" onclick="categoriaAtual='TODOS';renderizarLista()">TODOS <span>${counts.TODOS}</span></button>`;
+        BANCOS_LISTA.forEach(b => { if(counts[b] > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual===b?'active':''}" onclick="categoriaAtual='${b}';renderizarLista()">${b.toUpperCase()} <span>${counts[b]}</span></button>`; });
+        if(counts.Personalizado > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Personalizado'?'active':''}" onclick="categoriaAtual='Personalizado';renderizarLista()">PERS. <span>${counts.Personalizado}</span></button>`;
+        if(counts.Outros > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Outros'?'active':''}" onclick="categoriaAtual='Outros';renderizarLista()">NOVAS <span>${counts.Outros}</span></button>`;
         tabsDiv.innerHTML = tabsHtml;
 
-        let ultimoB = "";
-        arrayContas.sort((a,b) => a.categoria.localeCompare(b.categoria)).forEach(p => {
-            if (categoriaAtual !== "TODOS" && categoriaAtual !== p.categoria) return;
+        let bancosVistosCount = {};
+        let ultimoBancoMostrado = "";
 
-            if (p.categoria !== ultimoB) {
+        arrayContas.forEach(p => {
+            if (!bancosVistosCount[p.bPrincipal]) bancosVistosCount[p.bPrincipal] = counts[p.bPrincipal];
+            else bancosVistosCount[p.bPrincipal]--;
+            
+            let nExibicao = bancosVistosCount[p.bPrincipal];
+            if (categoriaAtual !== "TODOS" && categoriaAtual !== p.bPrincipal) return;
+
+            if (p.bPrincipal !== ultimoBancoMostrado) {
                 const divSep = document.createElement("div");
                 divSep.className = "divisor-banco";
-                divSep.innerHTML = p.categoria;
+                divSep.innerHTML = `<span>${p.bPrincipal}</span> <span>Total: ${counts[p.bPrincipal]}</span>`;
                 listaDiv.appendChild(divSep);
-                ultimoB = p.categoria;
+                ultimoBancoMostrado = p.bPrincipal;
             }
 
             const div = document.createElement("div");
             div.className = `pacote ${p.mae ? 'mae' : ''}`;
-            
-            // Verifica qual banco marcar no Select
-            let bancoNoSelect = "SELECIONE";
-            for(let b of BANCOS_LISTA) { if(p.banco.toUpperCase().includes(b.toUpperCase())) { bancoNoSelect = b; break; } }
-
             div.innerHTML = `
-                <p>
-                    <b>Banco:</b> 
-                    <select onchange="atualizar('${p.id}', 'banco', this.value)">
-                        <option value="SELECIONE" ${bancoNoSelect === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
-                        ${BANCOS_LISTA.map(b => `<option value="${b}" ${bancoNoSelect === b ? 'selected' : ''}>${b}</option>`).join('')}
+                <div class="btn-bonus ${p.bonus ? 'coletado' : ''}" onclick="atualizar('${p.id}', 'bonus', ${!p.bonus})">BÔNUS</div>
+                <p><b>Banco:</b> 
+                    <select class="bank-selector" onchange="atualizar('${p.id}', 'banco', this.value)">
+                        <option value="SELECIONE" ${p.banco === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
+                        ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco.includes(b) ? 'selected' : ''}>${b}</option>`).join('')}
                     </select>
-                    <input type="text" class="input-banco-custom" placeholder="Personalizar..." 
-                        value="${p.banco === 'SELECIONE' ? '' : p.banco}" 
-                        onchange="atualizar('${p.id}', 'banco', this.value)">
+                    <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button>
                 </p>
-                <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Senha S:</b> <span style="color:var(--green)">${p.senhaSimples || '123456'}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Nome:</b> <span>${nExibicao} ${p.nome}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${p.nome}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'telefone', '${p.telefone}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Chave PIX:</b> <span>${p.pix || p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'pix', '${p.pix || p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Login:</b> <span>${p.login}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'login', '${p.login}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Senha F:</b> <span style="color:#ff00ff">${p.senhaForte}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaForte', '${p.senhaForte}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Senha S:</b> <span style="color:#00ffff">${p.senhaSimples}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSimples', '${p.senhaSimples}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Saque:</b> <span style="color:#ffff00">${p.senhaSaque}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSaque', '${p.senhaSaque}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <div style="display:flex; gap:10px; margin-top:10px">
                     <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="atualizar('${p.id}', 'mae', ${!p.mae})">${p.mae?'★ MÃE ATIVA':'MARCAR MÃE'}</button>
                     <button class="btn-del" onclick="excluir('${p.id}')">EXCLUIR</button>
@@ -158,22 +192,65 @@
     }
 
     window.atualizar = (id, campo, valor) => firebase.database().ref(`pacotes/${id}`).update({[campo]: valor});
-    window.excluir = (id) => { if(confirm("Apagar permanentemente?")) firebase.database().ref(`pacotes/${id}`).remove(); };
-
-    window.gerarPacote = async () => {
-        await firebase.database().ref("pacotes").push({
-            nome: "Usuario " + Math.floor(Math.random()*999),
-            cpf: Math.floor(Math.random()*99999999999).toString(), 
-            banco: "SELECIONE", senhaSimples: "123456", mae: false
-        });
+    window.excluir = (id) => { if(confirm("Deseja realmente apagar esta conta permanentemente?")) firebase.database().ref(`pacotes/${id}`).remove(); };
+    window.abrirEdicao = (id, campo, valor) => {
+        const novo = prompt(`Editar ${campo.toUpperCase()}:`, valor);
+        if (novo !== null) atualizar(id, campo, novo);
     };
 
+    window.gerarPacote = async () => {
+        const btn = document.getElementById("btnGerar");
+        btn.innerText = "GERANDO..."; btn.disabled = true;
+        const nomesM = ["Ricardo", "Adilson", "Fabricio", "Vagner", "Roberto", "Marcos", "Leandro", "Claudio", "Alexandre", "Joao", "Pedro", "Gabriel"];
+        const nomesF = ["Patricia", "Luciana", "Renata", "Simone", "Adriana", "Tatiana", "Beatriz", "Eliane", "Celia", "Ana", "Maria", "Julia"];
+        const subs = ["Cardoso", "Mendes", "Teixeira", "Batista", "Moraes", "Farias", "Vieira", "Andrade", "Nunes", "Correa", "Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Costa", "Rodrigues", "Almeida"];
+        const gen = document.getElementById("generoGen").value;
+        const base = gen === 'masculino' ? nomesM : nomesF;
+        const nomeFinal = `${base[Math.floor(Math.random()*base.length)]} ${subs[Math.floor(Math.random()*subs.length)]} ${subs[Math.floor(Math.random()*subs.length)]}`;
+        
+        await firebase.database().ref("pacotes").push({
+            nome: nomeFinal, cpf: gerarCpfReal(), pix: "CPF", telefone: gerarTelefoneBrasil(),
+            login: nomeFinal.split(' ')[0].toLowerCase() + Math.floor(Math.random()*9999),
+            senhaForte: gerarSenhaForte(16), senhaSimples: gerarSenhaSimples(12), 
+            senhaSaque: Math.floor(100000 + Math.random() * 899999), banco: "SELECIONE", mae: false, bonus: false
+        });
+        btn.innerText = "GERAR CONTA ÚNICA"; btn.disabled = false;
+    };
+
+    function gerarCpfReal() {
+        const n = () => Math.floor(Math.random() * 9);
+        let n1=n(),n2=n(),n3=n(),n4=n(),n5=n(),n6=n(),n7=n(),n8=n(),n9=n();
+        let d1 = 11 - ((n9*2+n8*3+n7*4+n6*5+n5*6+n4*7+n3*8+n2*9+n1*10) % 11); if (d1 >= 10) d1 = 0;
+        let d2 = 11 - ((d1*2+n9*3+n8*4+n7*5+n6*6+n5*7+n4*8+n3*9+n2*10+n1*11) % 11); if (d2 >= 10) d2 = 0;
+        return `${n1}${n2}${n3}.${n4}${n5}${n6}.${n7}${n8}${n9}-${d1}${d2}`;
+    }
+
     function copiar(btn, tipo) {
-        let t = btn.parentElement.querySelector("span").innerText;
+        let span = btn.parentElement.querySelector("span");
+        let t = span.innerText;
+        if (span.parentElement.innerHTML.includes("Nome:")) t = t.replace(/^[0-9]+\s/, "");
         if (tipo === 'LIMPO') t = t.replace(/\D/g, '');
         navigator.clipboard.writeText(t);
-        let o = btn.innerText; btn.innerText = "OK"; setTimeout(() => btn.innerText = o, 800);
+        const o = btn.innerText; btn.innerText = "OK";
+        setTimeout(() => btn.innerText = o, 800);
     }
+
+    window.exportarBanco = () => {
+        firebase.database().ref("pacotes").once("value", s => {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
+            a.download = `backup_v25.json`; a.click();
+        });
+    };
+    window.importarBanco = (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const dados = JSON.parse(ev.target.result);
+            Object.keys(dados).forEach(k => firebase.database().ref("pacotes").push(dados[k]));
+        };
+        reader.readAsText(e.target.files[0]);
+    };
+    window.limparBanco = () => { if(confirm("Deseja apagar TUDO do banco de dados?")) firebase.database().ref("pacotes").remove(); };
 </script>
 </body>
 </html>
