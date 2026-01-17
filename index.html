@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V18 ORGANIZADA</title>
+    <title>DARCK METODOS - V19 FINAL</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -37,8 +37,8 @@
         .btn-edit { background: #222; color: #007bff; border: 1px solid #007bff33; }
         .btn-del { background: #3d0000; color: #ff4d4d; }
         
-        select { padding: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: white; cursor: pointer; }
-        .bank-selector { color: #00ff41 !important; border-color: #00ff41 !important; }
+        select { padding: 8px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; cursor: pointer; font-size: 0.8rem; }
+        .bank-selector { color: #00ff41 !important; border-color: #00ff41 !important; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -67,7 +67,7 @@
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-        <div id="lista">Sincronizando Banco de Dados...</div>
+        <div id="lista">Sincronizando...</div>
     </div>
 
 <script>
@@ -94,9 +94,11 @@
         });
     }
 
-    // Limpa números antigos do nome para não acumular
-    function limparNome(nome) {
-        return nome.replace(/^\d+\s*-\s*/, '').replace(/\s*\d+$/, '').trim();
+    // Função para limpar QUALQUER número ou símbolo de contagem antiga do nome
+    function limparNomeTotal(nome) {
+        if (!nome) return "";
+        // Remove números, traços e espaços no início e fim do nome
+        return nome.replace(/^[0-9\s\-\.]+/, "").replace(/[0-9\s\-\.]+$/, "").trim();
     }
 
     function detectarBancoPrincipal(valorBanco) {
@@ -119,37 +121,34 @@
             return { id, ...dadosGlobais[id], bPrincipal: detectarBancoPrincipal(dadosGlobais[id].banco) };
         });
 
-        // Ordem do menor para o maior (pelo ID do Firebase que é temporal)
+        // Ordem crescente (mais antiga para mais nova)
         arrayContas.sort((a, b) => a.id.localeCompare(b.id));
-
-        // Contagem para as abas
         arrayContas.forEach(p => { counts.TODOS++; counts[p.bPrincipal]++; });
         contadorDiv.innerText = `Contas na Nuvem: ${counts.TODOS}`;
 
-        // Abas
+        // Renderizar Abas
         let tabsHtml = `<button class="tab-btn ${categoriaAtual==='TODOS'?'active':''}" onclick="categoriaAtual='TODOS';renderizarLista()">TODOS <span>${counts.TODOS}</span></button>`;
         BANCOS_LISTA.forEach(b => { if(counts[b] > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual===b?'active':''}" onclick="categoriaAtual='${b}';renderizarLista()">${b.toUpperCase()} <span>${counts[b]}</span></button>`; });
         if(counts.Personalizado > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Personalizado'?'active':''}" onclick="categoriaAtual='Personalizado';renderizarLista()">PERS. <span>${counts.Personalizado}</span></button>`;
         if(counts.Outros > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Outros'?'active':''}" onclick="categoriaAtual='Outros';renderizarLista()">NOVAS <span>${counts.Outros}</span></button>`;
         tabsDiv.innerHTML = tabsHtml;
 
-        let bancosVistos = {};
+        let contadorBanco = {};
 
         arrayContas.forEach(p => {
             if (categoriaAtual !== "TODOS" && categoriaAtual !== p.bPrincipal) return;
 
-            // Incrementa contador específico deste banco
-            bancosVistos[p.bPrincipal] = (bancosVistos[p.bPrincipal] || 0) + 1;
-            let numConta = bancosVistos[p.bPrincipal];
+            contadorBanco[p.bPrincipal] = (contadorBanco[p.bPrincipal] || 0) + 1;
+            let nExibicao = contadorBanco[p.bPrincipal];
 
-            if (categoriaAtual === "TODOS" && numConta === 1) {
+            if (categoriaAtual === "TODOS" && nExibicao === 1) {
                 const divSep = document.createElement("div");
                 divSep.className = "divisor-banco";
                 divSep.innerText = p.bPrincipal;
                 listaDiv.appendChild(divSep);
             }
 
-            const nomeLimpo = limparNome(p.nome);
+            const nomeLimpo = limparNomeTotal(p.nome);
 
             const div = document.createElement("div");
             div.className = `pacote ${p.mae ? 'mae' : ''}`;
@@ -160,9 +159,8 @@
                         <option value="SELECIONE" ${p.banco === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
                         ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('')}
                     </select>
-                    <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button>
                 </p>
-                <p><b>Nome:</b> <span>${numConta} - ${nomeLimpo}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${nomeLimpo}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Nome:</b> <span>${nExibicao} ${nomeLimpo}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${nomeLimpo}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
                 <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'telefone', '${p.telefone}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
                 <p><b>Chave PIX:</b> <span>${p.pix || p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'pix', '${p.pix || p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
@@ -178,7 +176,10 @@
         });
     }
 
-    window.atualizar = (id, campo, valor) => { firebase.database().ref(`pacotes/${id}`).update({[campo]: valor}); };
+    window.atualizar = (id, campo, valor) => { 
+        firebase.database().ref(`pacotes/${id}`).update({[campo]: valor}); 
+    };
+
     window.excluir = (id) => { if(confirm("Apagar conta?")) firebase.database().ref(`pacotes/${id}`).remove(); };
     window.abrirEdicao = (id, campo, valor) => {
         const novo = prompt(`Editar ${campo.toUpperCase()}:`, valor);
@@ -192,7 +193,7 @@
         const pF = ["Patricia", "Luciana", "Renata", "Simone", "Adriana", "Tatiana", "Beatriz", "Eliane", "Celia", "Ana", "Maria", "Julia", "Isabela"];
         const s = ["Cardoso", "Mendes", "Teixeira", "Batista", "Moraes", "Farias", "Vieira", "Andrade", "Nunes", "Correa", "Silva", "Santos", "Oliveira"];
         const gen = document.getElementById("generoGen").value;
-        const nome = `${gen==='masculino'?pM[Math.floor(Math.random()*pM.length)]:pF[Math.floor(Math.random()*pF.length)]} ${s[Math.floor(Math.random()*s.length)]} ${s[Math.floor(Math.random()*s.length)]} ${s[Math.floor(Math.random()*s.length)]}`;
+        const nome = `${gen==='masculino'?pM[Math.floor(Math.random()*pM.length)]:pF[Math.floor(Math.random()*pF.length)]} ${s[Math.floor(Math.random()*s.length)]} ${s[Math.floor(Math.random()*s.length)]}`;
         
         await firebase.database().ref("pacotes").push({
             nome: nome, cpf: gerarCpfReal(), pix: "CPF", telefone: `(11) 9${Math.floor(70000+Math.random()*20000)}-${Math.floor(1000+Math.random()*8999)}`,
@@ -216,7 +217,10 @@
     function copiar(btn, tipo) {
         let span = btn.parentElement.querySelector("span");
         let t = span.innerText;
-        if (t.includes(' - ')) t = t.split(' - ')[1]; // Copia o nome sem o número
+        // Se for o nome, remove o número da exibição (ex: "1 ")
+        if (span.parentElement.innerHTML.includes("Nome:")) {
+            t = t.replace(/^[0-9]+\s/, "");
+        }
         if (tipo === 'LIMPO') t = t.replace(/\D/g, '');
         navigator.clipboard.writeText(t);
         const o = btn.innerText; btn.innerText = "OK";
@@ -227,7 +231,7 @@
         firebase.database().ref("pacotes").once("value", s => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_v18.json`; a.click();
+            a.download = `backup_darck.json`; a.click();
         });
     };
     window.importarBanco = (e) => {
