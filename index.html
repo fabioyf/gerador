@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>GERADOR DE DADOS</title>
+    <title>DARCK METODOS - V22 SEGURANÇA MÁXIMA</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -67,7 +67,7 @@
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-        <div id="lista">Organizando banco...</div>
+        <div id="lista">Fortalecendo senhas...</div>
     </div>
 
 <script>
@@ -99,6 +99,15 @@
         return nome.replace(/^[0-9\s\-\.]+/, "").replace(/[0-9\s\-\.]+$/, "").trim();
     }
 
+    function gerarSenhaUltra(tamanho = 16) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%¨&*()_+=-[]{}|;:,.<>?";
+        let senha = "";
+        for (let i = 0; i < tamanho; i++) {
+            senha += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return senha;
+    }
+
     function detectarBancoPrincipal(valorBanco) {
         if (!valorBanco || valorBanco === "SELECIONE") return "Outros";
         const valorBaixo = valorBanco.toLowerCase();
@@ -119,11 +128,10 @@
             return { id, ...dadosGlobais[id], bPrincipal: detectarBancoPrincipal(dadosGlobais[id].banco) };
         });
 
-        // Ordenar: Primeiro por Banco, depois por data (ID) DECRESCENTE (Novas no topo)
         arrayContas.sort((a, b) => {
             if (a.bPrincipal < b.bPrincipal) return -1;
             if (a.bPrincipal > b.bPrincipal) return 1;
-            return b.id.localeCompare(a.id); // Inverso para novas ficarem em cima
+            return b.id.localeCompare(a.id);
         });
 
         arrayContas.forEach(p => { counts.TODOS++; counts[p.bPrincipal]++; });
@@ -135,14 +143,14 @@
         if(counts.Outros > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Outros'?'active':''}" onclick="categoriaAtual='Outros';renderizarLista()">NOVAS <span>${counts.Outros}</span></button>`;
         tabsDiv.innerHTML = tabsHtml;
 
-        let bancosVistosCount = {}; // Para controlar a numeração decrescente por banco
+        let bancosVistosCount = {};
         let ultimoBancoMostrado = "";
 
         arrayContas.forEach(p => {
             if (!bancosVistosCount[p.bPrincipal]) {
-                bancosVistosCount[p.bPrincipal] = counts[p.bPrincipal]; // Começa do total (ex: 8)
+                bancosVistosCount[p.bPrincipal] = counts[p.bPrincipal];
             } else {
-                bancosVistosCount[p.bPrincipal]--; // Vai descendo (7, 6, 5...)
+                bancosVistosCount[p.bPrincipal]--;
             }
             
             let nExibicao = bancosVistosCount[p.bPrincipal];
@@ -169,16 +177,13 @@
                         ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco.includes(b) ? 'selected' : ''}>${b}</option>`).join('')}
                     </select>
                     <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button>
-                    <span style="font-size:0.7rem; color:#555; margin-left:10px">${p.banco}</span>
                 </p>
                 <p><b>Nome:</b> <span>${nExibicao} ${nomeLimpo}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${nomeLimpo}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'telefone', '${p.telefone}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Chave PIX:</b> <span>${p.pix || p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'pix', '${p.pix || p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Login:</b> <span>${p.login}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'login', '${p.login}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Senha F:</b> <span>${p.senhaForte}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaForte', '${p.senhaForte}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Senha S:</b> <span>${p.senhaSimples}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSimples', '${p.senhaSimples}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Saque:</b> <span>${p.senhaSaque}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSaque', '${p.senhaSaque}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Login:</b> <span>${p.login}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Senha F:</b> <span style="color:#ff00ff">${p.senhaForte}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Senha S:</b> <span style="color:#00ffff">${p.senhaSimples}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Saque:</b> <span style="color:#ffff00">${p.senhaSaque}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <div style="display:flex; gap:10px; margin-top:10px">
                     <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="atualizar('${p.id}', 'mae', ${!p.mae})">${p.mae?'★ MÃE ATIVA':'MARCAR MÃE'}</button>
                     <button class="btn-del" onclick="excluir('${p.id}')">EXCLUIR</button>
@@ -206,8 +211,9 @@
         await firebase.database().ref("pacotes").push({
             nome: nome, cpf: gerarCpfReal(), pix: "CPF", telefone: `(11) 9${Math.floor(70000+Math.random()*20000)}-${Math.floor(1000+Math.random()*8999)}`,
             login: nome.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 8999),
-            senhaForte: Math.random().toString(36).slice(-8).toUpperCase() + "@" + Math.floor(10+Math.random()*89),
-            senhaSimples: Math.random().toString(36).slice(-8), senhaSaque: Math.floor(100000 + Math.random() * 899999),
+            senhaForte: gerarSenhaUltra(16),
+            senhaSimples: gerarSenhaUltra(14), 
+            senhaSaque: Math.floor(100000 + Math.random() * 899999),
             banco: "SELECIONE", mae: false, bonus: false
         });
         btn.innerText = "GERAR CONTA ÚNICA"; btn.disabled = false;
@@ -236,7 +242,7 @@
         firebase.database().ref("pacotes").once("value", s => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_v21.json`; a.click();
+            a.download = `backup_darck_v22.json`; a.click();
         });
     };
     window.importarBanco = (e) => {
