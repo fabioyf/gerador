@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V20 PREMIUM</title>
+    <title>GERADOR DE DADOS</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -38,7 +38,7 @@
         .btn-del { background: #3d0000; color: #ff4d4d; }
         
         select { padding: 8px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; cursor: pointer; font-size: 0.8rem; }
-        .bank-selector { color: #00ff41 !important; border-color: #00ff41 !important; font-weight: bold; }
+        .bank-selector { color: #00ff41 !important; border-color: #00ff41 !important; font-weight: bold; width: 150px; }
     </style>
 </head>
 <body>
@@ -67,7 +67,7 @@
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-        <div id="lista">Organizando Banco...</div>
+        <div id="lista">Organizando banco...</div>
     </div>
 
 <script>
@@ -115,16 +115,15 @@
         let counts = { TODOS: 0, Outros: 0, Personalizado: 0 };
         BANCOS_LISTA.forEach(b => counts[b] = 0);
 
-        // Transforma objeto em Array e adiciona a detecção de banco
         let arrayContas = Object.keys(dadosGlobais).map(id => {
             return { id, ...dadosGlobais[id], bPrincipal: detectarBancoPrincipal(dadosGlobais[id].banco) };
         });
 
-        // --- CORREÇÃO DO BUG: ORDENAÇÃO POR BANCO PRIMEIRO ---
+        // Ordenar: Primeiro por Banco, depois por data (ID) DECRESCENTE (Novas no topo)
         arrayContas.sort((a, b) => {
             if (a.bPrincipal < b.bPrincipal) return -1;
             if (a.bPrincipal > b.bPrincipal) return 1;
-            return a.id.localeCompare(b.id); // Depois por data de criação
+            return b.id.localeCompare(a.id); // Inverso para novas ficarem em cima
         });
 
         arrayContas.forEach(p => { counts.TODOS++; counts[p.bPrincipal]++; });
@@ -136,17 +135,20 @@
         if(counts.Outros > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Outros'?'active':''}" onclick="categoriaAtual='Outros';renderizarLista()">NOVAS <span>${counts.Outros}</span></button>`;
         tabsDiv.innerHTML = tabsHtml;
 
-        let contadorBancoInterno = {};
+        let bancosVistosCount = {}; // Para controlar a numeração decrescente por banco
         let ultimoBancoMostrado = "";
 
         arrayContas.forEach(p => {
-            // Contagem precisa acontecer para todos, para o número do nome ser real
-            contadorBancoInterno[p.bPrincipal] = (contadorBancoInterno[p.bPrincipal] || 0) + 1;
-            let nExibicao = contadorBancoInterno[p.bPrincipal];
+            if (!bancosVistosCount[p.bPrincipal]) {
+                bancosVistosCount[p.bPrincipal] = counts[p.bPrincipal]; // Começa do total (ex: 8)
+            } else {
+                bancosVistosCount[p.bPrincipal]--; // Vai descendo (7, 6, 5...)
+            }
+            
+            let nExibicao = bancosVistosCount[p.bPrincipal];
 
             if (categoriaAtual !== "TODOS" && categoriaAtual !== p.bPrincipal) return;
 
-            // Mostrar divisor apenas se o banco mudar na lista ordenada
             if (p.bPrincipal !== ultimoBancoMostrado) {
                 const divSep = document.createElement("div");
                 divSep.className = "divisor-banco";
@@ -164,8 +166,10 @@
                 <p><b>Banco:</b> 
                     <select class="bank-selector" onchange="atualizar('${p.id}', 'banco', this.value)">
                         <option value="SELECIONE" ${p.banco === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
-                        ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('')}
+                        ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco.includes(b) ? 'selected' : ''}>${b}</option>`).join('')}
                     </select>
+                    <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button>
+                    <span style="font-size:0.7rem; color:#555; margin-left:10px">${p.banco}</span>
                 </p>
                 <p><b>Nome:</b> <span>${nExibicao} ${nomeLimpo}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${nomeLimpo}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
@@ -232,7 +236,7 @@
         firebase.database().ref("pacotes").once("value", s => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_v20.json`; a.click();
+            a.download = `backup_v21.json`; a.click();
         });
     };
     window.importarBanco = (e) => {
