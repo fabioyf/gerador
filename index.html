@@ -6,7 +6,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; }
+        :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; --green: #00ff41; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
@@ -30,7 +30,22 @@
         .btn-edit { background: #222; color: #007bff; border: 1px solid #007bff33; }
         .btn-del { background: #3d0000; color: #ff4d4d; }
         select { padding: 8px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; cursor: pointer; font-size: 0.8rem; }
-        .bank-selector { color: #00ff41 !important; border-color: #00ff41 !important; font-weight: bold; width: 150px; }
+        
+        /* NOVO INPUT DE LEMBRETE/CUSTOM */
+        .input-lembrete {
+            background: transparent;
+            border: 1px solid var(--green);
+            color: var(--green);
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            font-family: monospace;
+            width: 180px;
+            outline: none;
+        }
+        .input-lembrete:focus { background: rgba(0, 255, 65, 0.05); }
+
+        .bank-selector { color: #fff !important; font-weight: bold; width: 150px; }
     </style>
 </head>
 <body>
@@ -85,7 +100,6 @@
     }
 
     function gerarTelefoneBrasil() {
-        // Todos os DDDs reais do Brasil
         const ddds = [11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99];
         const ddd = ddds[Math.floor(Math.random() * ddds.length)];
         const p1 = Math.floor(Math.random() * 9000) + 1000;
@@ -173,12 +187,13 @@
                         <option value="SELECIONE" ${p.banco === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
                         ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco.includes(b) ? 'selected' : ''}>${b}</option>`).join('')}
                     </select>
-                    <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button>
+                    <input type="text" class="input-lembrete" placeholder="Lembrete / Custom" 
+                        value="${p.banco === 'SELECIONE' ? '' : p.banco}" 
+                        onchange="atualizar('${p.id}', 'banco', this.value)">
                 </p>
                 <p><b>Nome:</b> <span>${nExibicao} ${p.nome}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${p.nome}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
                 <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'telefone', '${p.telefone}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Chave PIX:</b> <span>${p.pix || p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'pix', '${p.pix || p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
                 <p><b>Login:</b> <span>${p.login}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'login', '${p.login}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>Senha F:</b> <span style="color:#ff00ff">${p.senhaForte}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaForte', '${p.senhaForte}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>Senha S:</b> <span style="color:#00ffff">${p.senhaSimples}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSimples', '${p.senhaSimples}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
