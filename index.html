@@ -2,156 +2,201 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>GERADOR DARCK - FULL PROTECTED</title>
+    <title>DARCK METODOS - PREMIUM CLOUD</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: #fff; padding: 20px; }
-        #bloqueio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; }
-        #conteudo { display: none; }
+        :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         
-        .controls { background: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #333; }
-        .pacote { background: #252525; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 6px solid #007bff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .pacote.mae { border-left-color: #ff9800; background: #2d230b; }
+        /* Bloqueio */
+        #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        #conteudo { display: none; max-width: 900px; margin: 0 auto; }
+
+        /* Controles */
+        .header { text-align: center; margin-bottom: 30px; }
+        .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; box-shadow: 0 4px 20px rgba(0,0,0,0.4); justify-content: center; }
         
-        p { margin: 10px 0; border-bottom: 1px solid #333; padding-bottom: 6px; display: flex; align-items: center; font-size: 0.9rem; }
-        b { color: #007bff; min-width: 140px; display: inline-block; }
+        /* Cards */
+        .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); transition: 0.3s; position: relative; }
+        .pacote.mae { border-left-color: #ff9800; background: #221a05; }
         
-        button { cursor: pointer; border: none; border-radius: 5px; padding: 8px 14px; font-weight: bold; transition: 0.2s; }
-        .btn-gen { background: #007bff; color: white; }
-        .btn-copy { background: #6c757d; color: white; margin-left: auto; font-size: 0.75rem; }
-        .btn-backup { background: #6f42c1; color: white; }
-        .btn-del { background: #dc3545; color: white; margin-top: 15px; width: 100%; }
-        
-        input, select { padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: white; }
-        #senhaInput { width: 250px; text-align: center; font-size: 1.1rem; border: 2px solid #007bff; }
+        p { margin: 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        b { color: var(--primary); width: 140px; font-size: 0.85rem; text-transform: uppercase; }
+        span { font-family: monospace; font-size: 1rem; color: #fff; }
+
+        /* Botões */
+        button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 15px; font-weight: bold; transition: 0.2s; font-size: 0.8rem; }
+        .btn-gen { background: var(--primary); color: white; padding: 12px 25px; }
+        .btn-copy { background: #333; color: #ccc; margin-left: auto; }
+        .btn-copy:hover { background: var(--primary); color: white; }
+        .btn-edit { background: #222; color: #888; border: 1px solid #333; font-size: 0.7rem; }
+        .btn-edit:hover { color: #fff; border-color: var(--primary); }
+        .btn-del { background: #3d0000; color: #ff4d4d; width: 100%; margin-top: 15px; }
+        .btn-del:hover { background: #600; }
+
+        input, select { padding: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: white; }
+        #senhaInput { width: 200px; text-align: center; font-size: 1.5rem; border: 2px solid var(--primary); letter-spacing: 8px; }
     </style>
 </head>
 <body>
 
     <div id="bloqueio">
-        <h1 style="color:#007bff">DARCK METODOS</h1>
-        <p style="border:none">Sistema de Gerenciamento em Nuvem</p>
-        <input type="password" id="senhaInput" placeholder="Chave de Acesso">
-        <button class="btn-gen" style="margin-top:10px; width:250px" onclick="verificarSenha()">ACESSAR PAINEL</button>
-        <p id="erro" style="color: #dc3545; border: none; margin-top: 15px; font-weight:bold"></p>
+        <h1 style="color:var(--primary); margin:0;">DARCK METODOS</h1>
+        <p style="color:#555; margin-bottom:20px;">ACESSO RESTRITO À NUVEM</p>
+        <input type="password" id="senhaInput" autofocus>
+        <button class="btn-gen" style="margin-top:15px; width:220px" onclick="verificarSenha()">ENTRAR</button>
+        <p id="erro" style="color: #ff4d4d; font-weight: bold; margin-top: 15px;"></p>
     </div>
 
     <div id="conteudo">
-        <h2>GERADOR DARCK <span style="color: #28a745; font-size: 0.8rem; border: 1px solid #28a745; padding: 2px 5px; border-radius: 4px;">NUVEM SINCRONIZADA</span></h2>
+        <div class="header">
+            <h2>PAINEL DE CONTAS <span style="color:var(--primary)">DARCK</span></h2>
+        </div>
 
         <div class="controls">
             <select id="genero">
                 <option value="masculino">Masculino</option>
                 <option value="feminino">Feminino</option>
-                <option value="aleatorio">Aleatório</option>
             </select>
-            <button class="btn-gen" onclick="gerar()">GERAR DADOS</button>
-            <button class="btn-backup" onclick="exportarBanco()">EXPORTAR BACKUP (.JSON)</button>
-            <button class="btn-backup" onclick="document.getElementById('fileIn').click()">IMPORTAR BACKUP</button>
+            <button class="btn-gen" onclick="gerar()">GERAR NOVO</button>
+            <button style="background:#6f42c1; color:white;" onclick="exportarBanco()">BACKUP .JSON</button>
+            <button style="background:#444; color:white;" onclick="document.getElementById('fileIn').click()">IMPORTAR</button>
             <input type="file" id="fileIn" style="display:none" accept=".json" onchange="importarBanco(event)">
-            <button onclick="limparBanco()" style="background:#444; color:white;">LIMPAR NUVEM</button>
-            <button onclick="location.reload()" style="background:#222; color:#aaa">SAIR</button>
+            <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR NUVEM</button>
+            <button onclick="location.reload()" style="background:#b30000; color:white">SAIR</button>
         </div>
 
-        <div id="lista">Carregando dados...</div>
+        <div id="lista" style="margin-top: 30px;">Conectando...</div>
     </div>
 
 <script>
-    const SENHA_MESTRA = "darck123"; // Sua senha de acesso
+    // Configurações
+    const SENHA_ACESSO = "2323"; 
     const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
 
     function verificarSenha() {
-        if (document.getElementById("senhaInput").value === SENHA_MESTRA) {
+        if (document.getElementById("senhaInput").value === SENHA_ACESSO) {
             document.getElementById("bloqueio").style.display = "none";
             document.getElementById("conteudo").style.display = "block";
-            iniciarSistema();
+            iniciarApp();
         } else {
-            document.getElementById("erro").innerText = "ACESSO NEGADO!";
+            document.getElementById("erro").innerText = "SENHA INVÁLIDA";
         }
     }
 
     document.getElementById("senhaInput").addEventListener("keyup", (e) => { if(e.key === "Enter") verificarSenha(); });
 
-    function iniciarSistema() {
+    function iniciarApp() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Banco de Nomes
-        const nomesM = ["Lucas", "Gabriel", "Matheus", "Pedro", "Rafael", "João", "Guilherme", "Gustavo", "Felipe", "Bruno", "Tiago", "Thiago", "Vitor", "Leonardo", "Eduardo"];
-        const nomesF = ["Maria", "Ana", "Juliana", "Patrícia", "Camila", "Fernanda", "Beatriz", "Letícia", "Larissa", "Aline", "Jéssica", "Bruna", "Amanda", "Vanessa"];
-        const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida", "Costa", "Gomes", "Martins"];
+        // Nomes para Gerador
+        const nomesM = ["Lucas", "Gabriel", "Matheus", "Pedro", "Rafael", "João", "Guilherme", "Vitor", "Bruno"];
+        const nomesF = ["Maria", "Ana", "Juliana", "Patrícia", "Camila", "Fernanda", "Beatriz", "Larissa", "Aline"];
+        const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Almeida", "Rocha"];
 
+        // Renderização em Tempo Real
         db.ref("pacotes").on("value", (snapshot) => {
             const listaDiv = document.getElementById("lista");
             listaDiv.innerHTML = "";
             const data = snapshot.val();
-            if (data) {
-                Object.keys(data).reverse().forEach(id => {
-                    const p = data[id];
-                    const div = document.createElement("div");
-                    div.className = `pacote ${p.mae ? 'mae' : ''}`;
-                    div.innerHTML = `
-                        <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this, 'Nome')">Copiar</button></p>
-                        <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'CPF')">Copiar</button></p>
-                        <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
-                        <p><b>Login:</b> <span>${p.login}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
-                        <p><b>Senha (Símbolos):</b> <span>${p.senhaForte}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
-                        <p><b>Senha (Letras/Núm):</b> <span>${p.senhaSimples}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
-                        <p><b>Senha Saque (6 Díg):</b> <span>${p.senhaSaque}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
-                        <div style="display:flex; gap:10px">
-                            <button style="flex:1; background:${p.mae?'#ff9800':'#444'}; color:white;" onclick="toggleMae('${id}', ${p.mae})">
-                                ${p.mae ? '★ CONTA MÃE ATIVA' : 'MARCAR COMO MÃE'}
-                            </button>
-                            <button class="btn-del" style="flex:1; margin:0" onclick="excluir('${id}')">EXCLUIR</button>
-                        </div>
-                    `;
-                    listaDiv.appendChild(div);
-                });
-            } else { listaDiv.innerHTML = "Nenhum dado na nuvem."; }
+            if (!data) { listaDiv.innerHTML = "<center>Nenhum registro encontrado.</center>"; return; }
+
+            Object.keys(data).reverse().forEach(id => {
+                const p = data[id];
+                const div = document.createElement("div");
+                div.className = `pacote ${p.mae ? 'mae' : ''}`;
+                
+                // Função auxiliar para criar linhas com botão editar
+                const criarLinha = (label, valor, campo) => `
+                    <p>
+                        <b>${label}:</b> <span>${valor || '---'}</span>
+                        <button class="btn-edit" onclick="editar('${id}', '${campo}', '${valor}')">Edit</button>
+                        <button class="btn-copy" onclick="copiar(this, '${label}')">Copiar</button>
+                    </p>`;
+
+                div.innerHTML = `
+                    ${criarLinha('Nome', p.nome, 'nome')}
+                    ${criarLinha('CPF', p.cpf, 'cpf')}
+                    ${criarLinha('Telefone', p.telefone, 'telefone')}
+                    ${criarLinha('Login', p.login, 'login')}
+                    ${criarLinha('Senha Forte', p.senhaForte, 'senhaForte')}
+                    ${criarLinha('Senha Simples', p.senhaSimples, 'senhaSimples')}
+                    ${criarLinha('Senha Saque', p.senhaSaque, 'senhaSaque')}
+                    <div style="display:flex; gap:10px; margin-top:15px">
+                        <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="toggleMae('${id}', ${p.mae})">
+                            ${p.mae ? '★ CONTA MÃE' : 'MARCAR COMO MÃE'}
+                        </button>
+                        <button class="btn-del" style="flex:1; margin:0" onclick="excluir('${id}')">EXCLUIR</button>
+                    </div>
+                `;
+                listaDiv.appendChild(div);
+            });
         });
 
+        // Funções Globais
         window.gerar = () => {
             const gen = document.getElementById("genero").value;
-            let listaN = (gen === "feminino") ? nomesF : (gen === "masculino") ? nomesM : (Math.random() > 0.5 ? nomesM : nomesF);
-            const nomeFinal = `${listaN[Math.floor(Math.random()*listaN.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]}`;
+            let listaN = (gen === "feminino") ? nomesF : nomesM;
+            const n = `${listaN[Math.floor(Math.random()*listaN.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]}`;
             
-            const novoPacote = {
-                nome: nomeFinal,
+            const novo = {
+                nome: n,
                 cpf: gerarCpf(),
                 telefone: "119" + Math.random().toString().slice(2,10),
-                login: nomeFinal.split(" ")[0].toLowerCase() + Math.floor(Math.random()*999),
-                senhaForte: Math.random().toString(36).slice(-8) + "!@#",
-                senhaSimples: Math.random().toString(36).slice(-10).toUpperCase(),
+                login: n.split(" ")[0].toLowerCase() + Math.floor(Math.random()*99),
+                senhaForte: Math.random().toString(36).slice(-6) + "@" + Math.floor(Math.random()*99),
+                senhaSimples: Math.random().toString(36).slice(-8).toUpperCase(),
                 senhaSaque: Math.floor(100000 + Math.random() * 900000),
                 mae: false
             };
-            db.ref("pacotes").push(novoPacote);
+            db.ref("pacotes").push(novo);
         };
 
-        window.toggleMae = (id, status) => db.ref("pacotes/" + id).update({ mae: !status });
-        window.excluir = (id) => { if(confirm("Excluir definitivamente?")) db.ref("pacotes/" + id).remove(); };
-        window.limparBanco = () => { if(confirm("Deseja APAGAR TUDO da nuvem?")) db.ref("pacotes").remove(); };
+        window.editar = (id, campo, valorAntigo) => {
+            const novoValor = prompt(`Editar ${campo}:`, valorAntigo);
+            if (novoValor !== null) {
+                db.ref(`pacotes/${id}`).update({ [campo]: novoValor });
+            }
+        };
+
+        window.toggleMae = (id, status) => db.ref(`pacotes/${id}`).update({ mae: !status });
+        window.excluir = (id) => { if(confirm("Apagar conta?")) db.ref(`pacotes/${id}`).remove(); };
+        window.limparBanco = () => { if(confirm("LIMPAR TUDO?")) db.ref("pacotes").remove(); };
 
         window.exportarBanco = () => {
             db.ref("pacotes").once("value", (snapshot) => {
                 const blob = new Blob([JSON.stringify(snapshot.val(), null, 2)], { type: "application/json" });
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blob);
-                a.download = `backup_darck_${Date.now()}.json`;
-                a.click();
+                a.download = `backup_darck.json`; a.click();
             });
         };
 
-        window.importarBanco = (event) => {
+        window.importarBanco = (e) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const json = JSON.parse(e.target.result);
-                if(confirm("Adicionar dados do backup à nuvem?")) {
-                    Object.keys(json).forEach(k => db.ref("pacotes").push(json[k]));
-                }
+            reader.onload = (event) => {
+                try {
+                    const json = JSON.parse(event.target.result);
+                    Object.keys(json).forEach(k => {
+                        // Garante que campos faltando não fiquem undefined
+                        const item = json[k];
+                        db.ref("pacotes").push({
+                            nome: item.nome || "",
+                            cpf: item.cpf || "",
+                            telefone: item.telefone || "",
+                            login: item.login || "",
+                            senhaForte: item.senhaForte || "",
+                            senhaSimples: item.senhaSimples || "",
+                            senhaSaque: item.senhaSaque || "",
+                            mae: item.mae || false
+                        });
+                    });
+                    alert("Importado com sucesso!");
+                } catch(err) { alert("Erro ao ler arquivo JSON"); }
             };
-            reader.readAsText(event.target.files[0]);
+            reader.readAsText(e.target.files[0]);
         };
     }
 
@@ -159,18 +204,10 @@
         let texto = btn.parentElement.querySelector("span").innerText;
         if (tipo === 'Nome') texto = texto.replace(/[0-9]/g, '').trim();
         if (tipo === 'CPF') texto = texto.replace(/\D/g, '');
-        
-        const el = document.createElement('textarea');
-        el.value = texto;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-        
+        navigator.clipboard.writeText(texto);
         const original = btn.innerText;
-        btn.innerText = "COPIADO!";
-        btn.style.background = "#28a745";
-        setTimeout(() => { btn.innerText = original; btn.style.background = "#6c757d"; }, 800);
+        btn.innerText = "COPIADO";
+        setTimeout(() => btn.innerText = original, 800);
     }
 
     function gerarCpf() {
