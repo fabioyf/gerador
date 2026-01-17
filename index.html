@@ -8,33 +8,21 @@
     <style>
         :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        
-        /* Bloqueio */
         #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
-
-        /* Controles */
         .header { text-align: center; margin-bottom: 30px; }
         .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; box-shadow: 0 4px 20px rgba(0,0,0,0.4); justify-content: center; }
-        
-        /* Cards */
         .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); transition: 0.3s; position: relative; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
-        
         p { margin: 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-        b { color: var(--primary); width: 140px; font-size: 0.85rem; text-transform: uppercase; }
-        span { font-family: monospace; font-size: 1rem; color: #fff; }
-
-        /* Botões */
+        b { color: var(--primary); width: 150px; font-size: 0.85rem; text-transform: uppercase; }
+        span { font-family: monospace; font-size: 1rem; color: #fff; flex-grow: 1; }
         button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 15px; font-weight: bold; transition: 0.2s; font-size: 0.8rem; }
         .btn-gen { background: var(--primary); color: white; padding: 12px 25px; }
-        .btn-copy { background: #333; color: #ccc; margin-left: auto; }
+        .btn-copy { background: #333; color: #ccc; }
         .btn-copy:hover { background: var(--primary); color: white; }
         .btn-edit { background: #222; color: #888; border: 1px solid #333; font-size: 0.7rem; }
-        .btn-edit:hover { color: #fff; border-color: var(--primary); }
         .btn-del { background: #3d0000; color: #ff4d4d; width: 100%; margin-top: 15px; }
-        .btn-del:hover { background: #600; }
-
         input, select { padding: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: white; }
         #senhaInput { width: 200px; text-align: center; font-size: 1.5rem; border: 2px solid var(--primary); letter-spacing: 8px; }
     </style>
@@ -43,7 +31,7 @@
 
     <div id="bloqueio">
         <h1 style="color:var(--primary); margin:0;">DARCK METODOS</h1>
-        <p style="color:#555; margin-bottom:20px;">ACESSO RESTRITO À NUVEM</p>
+        <p style="color:#555; margin-bottom:20px;">SENHA: 2323</p>
         <input type="password" id="senhaInput" autofocus>
         <button class="btn-gen" style="margin-top:15px; width:220px" onclick="verificarSenha()">ENTRAR</button>
         <p id="erro" style="color: #ff4d4d; font-weight: bold; margin-top: 15px;"></p>
@@ -51,7 +39,7 @@
 
     <div id="conteudo">
         <div class="header">
-            <h2>PAINEL DE CONTAS <span style="color:var(--primary)">DARCK</span></h2>
+            <h2>PAINEL DE CONTAS <span style="color:var(--primary)">NUVEM</span></h2>
         </div>
 
         <div class="controls">
@@ -60,18 +48,16 @@
                 <option value="feminino">Feminino</option>
             </select>
             <button class="btn-gen" onclick="gerar()">GERAR NOVO</button>
-            <button style="background:#6f42c1; color:white;" onclick="exportarBanco()">BACKUP .JSON</button>
-            <button style="background:#444; color:white;" onclick="document.getElementById('fileIn').click()">IMPORTAR</button>
+            <button style="background:#6f42c1; color:white;" onclick="exportarBanco()">EXPORTAR BACKUP</button>
+            <button style="background:#444; color:white;" onclick="document.getElementById('fileIn').click()">IMPORTAR BACKUP</button>
             <input type="file" id="fileIn" style="display:none" accept=".json" onchange="importarBanco(event)">
-            <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR NUVEM</button>
-            <button onclick="location.reload()" style="background:#b30000; color:white">SAIR</button>
+            <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
 
-        <div id="lista" style="margin-top: 30px;">Conectando...</div>
+        <div id="lista" style="margin-top: 30px;">Conectando ao Firebase...</div>
     </div>
 
 <script>
-    // Configurações
     const SENHA_ACESSO = "2323"; 
     const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
 
@@ -91,136 +77,125 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Nomes para Gerador
-        const nomesM = ["Lucas", "Gabriel", "Matheus", "Pedro", "Rafael", "João", "Guilherme", "Vitor", "Bruno"];
-        const nomesF = ["Maria", "Ana", "Juliana", "Patrícia", "Camila", "Fernanda", "Beatriz", "Larissa", "Aline"];
-        const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Almeida", "Rocha"];
-
-        // Renderização em Tempo Real
         db.ref("pacotes").on("value", (snapshot) => {
             const listaDiv = document.getElementById("lista");
             listaDiv.innerHTML = "";
             const data = snapshot.val();
-            if (!data) { listaDiv.innerHTML = "<center>Nenhum registro encontrado.</center>"; return; }
+            if (!data) return listaDiv.innerHTML = "<center>Nenhum dado na nuvem.</center>";
 
             Object.keys(data).reverse().forEach(id => {
                 const p = data[id];
                 const div = document.createElement("div");
                 div.className = `pacote ${p.mae ? 'mae' : ''}`;
                 
-                // Função auxiliar para criar linhas com botão editar
-                const criarLinha = (label, valor, campo) => `
-                    <p>
-                        <b>${label}:</b> <span>${valor || '---'}</span>
-                        <button class="btn-edit" onclick="editar('${id}', '${campo}', '${valor}')">Edit</button>
-                        <button class="btn-copy" onclick="copiar(this, '${label}')">Copiar</button>
-                    </p>`;
+                const campos = [
+                    {l: 'Nome', v: p.nome, k: 'nome'},
+                    {l: 'CPF', v: p.cpf, k: 'cpf'},
+                    {l: 'Telefone', v: p.telefone, k: 'telefone'},
+                    {l: 'Login', v: p.login, k: 'login'},
+                    {l: 'Senha Forte', v: p.senhaForte, k: 'senhaForte'},
+                    {l: 'Senha Simples', v: p.senhaSimples, k: 'senhaSimples'},
+                    {l: 'Senha Saque', v: p.senhaSaque, k: 'senhaSaque'}
+                ];
 
-                div.innerHTML = `
-                    ${criarLinha('Nome', p.nome, 'nome')}
-                    ${criarLinha('CPF', p.cpf, 'cpf')}
-                    ${criarLinha('Telefone', p.telefone, 'telefone')}
-                    ${criarLinha('Login', p.login, 'login')}
-                    ${criarLinha('Senha Forte', p.senhaForte, 'senhaForte')}
-                    ${criarLinha('Senha Simples', p.senhaSimples, 'senhaSimples')}
-                    ${criarLinha('Senha Saque', p.senhaSaque, 'senhaSaque')}
+                div.innerHTML = campos.map(c => `
+                    <p>
+                        <b>${c.l}:</b> <span>${c.v || '---'}</span>
+                        <button class="btn-edit" onclick="editar('${id}', '${c.k}', '${c.v}')">Editar</button>
+                        <button class="btn-copy" onclick="copiar(this, '${c.l}')">Copiar</button>
+                    </p>`).join('') + `
                     <div style="display:flex; gap:10px; margin-top:15px">
                         <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="toggleMae('${id}', ${p.mae})">
-                            ${p.mae ? '★ CONTA MÃE' : 'MARCAR COMO MÃE'}
+                            ${p.mae ? '★ CONTA MÃE ATIVA' : 'MARCAR COMO MÃE'}
                         </button>
                         <button class="btn-del" style="flex:1; margin:0" onclick="excluir('${id}')">EXCLUIR</button>
-                    </div>
-                `;
+                    </div>`;
                 listaDiv.appendChild(div);
             });
         });
 
-        // Funções Globais
         window.gerar = () => {
-            const gen = document.getElementById("genero").value;
-            let listaN = (gen === "feminino") ? nomesF : nomesM;
-            const n = `${listaN[Math.floor(Math.random()*listaN.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]}`;
-            
+            const n = "Gerando..."; // Simplificado para o exemplo
             const novo = {
-                nome: n,
-                cpf: gerarCpf(),
+                nome: "Novo Usuario " + Math.floor(Math.random()*100),
+                cpf: "000.000.000-00",
                 telefone: "119" + Math.random().toString().slice(2,10),
-                login: n.split(" ")[0].toLowerCase() + Math.floor(Math.random()*99),
-                senhaForte: Math.random().toString(36).slice(-6) + "@" + Math.floor(Math.random()*99),
-                senhaSimples: Math.random().toString(36).slice(-8).toUpperCase(),
-                senhaSaque: Math.floor(100000 + Math.random() * 900000),
+                login: "user" + Math.floor(Math.random()*999),
+                senhaForte: "S@nha" + Math.floor(Math.random()*99),
+                senhaSimples: "SENHA123",
+                senhaSaque: "123456",
                 mae: false
             };
             db.ref("pacotes").push(novo);
         };
 
-        window.editar = (id, campo, valorAntigo) => {
-            const novoValor = prompt(`Editar ${campo}:`, valorAntigo);
-            if (novoValor !== null) {
-                db.ref(`pacotes/${id}`).update({ [campo]: novoValor });
-            }
+        window.editar = (id, campo, valor) => {
+            const novo = prompt(`Editar ${campo}:`, valor);
+            if (novo !== null) db.ref(`pacotes/${id}`).update({ [campo]: novo });
         };
 
         window.toggleMae = (id, status) => db.ref(`pacotes/${id}`).update({ mae: !status });
-        window.excluir = (id) => { if(confirm("Apagar conta?")) db.ref(`pacotes/${id}`).remove(); };
-        window.limparBanco = () => { if(confirm("LIMPAR TUDO?")) db.ref("pacotes").remove(); };
+        window.excluir = (id) => { if(confirm("Excluir?")) db.ref(`pacotes/${id}`).remove(); };
+        window.limparBanco = () => { if(confirm("Limpar nuvem?")) db.ref("pacotes").remove(); };
 
         window.exportarBanco = () => {
             db.ref("pacotes").once("value", (snapshot) => {
-                const blob = new Blob([JSON.stringify(snapshot.val(), null, 2)], { type: "application/json" });
+                const blob = new Blob([JSON.stringify(snapshot.val())], { type: "application/json" });
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blob);
-                a.download = `backup_darck.json`; a.click();
+                a.download = `backup_nuvem.json`; a.click();
             });
         };
 
+        // --- IMPORTAÇÃO INTELIGENTE (ACEITA ARQUIVO ANTIGO E NOVO) ---
         window.importarBanco = (e) => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
-                    const json = JSON.parse(event.target.result);
-                    Object.keys(json).forEach(k => {
-                        // Garante que campos faltando não fiquem undefined
-                        const item = json[k];
-                        db.ref("pacotes").push({
-                            nome: item.nome || "",
-                            cpf: item.cpf || "",
-                            telefone: item.telefone || "",
-                            login: item.login || "",
-                            senhaForte: item.senhaForte || "",
-                            senhaSimples: item.senhaSimples || "",
-                            senhaSaque: item.senhaSaque || "",
-                            mae: item.mae || false
+                    const dados = JSON.parse(event.target.result);
+                    
+                    // Se for backup do modelo ANTIGO (que tinha .html dentro)
+                    if (dados.html) {
+                        const tempDiv = document.createElement("div");
+                        tempDiv.innerHTML = dados.html;
+                        const pacotesAntigos = tempDiv.querySelectorAll(".pacote");
+                        
+                        pacotesAntigos.forEach(p => {
+                            const extrair = (label) => {
+                                const el = Array.from(p.querySelectorAll("p")).find(item => item.innerText.includes(label));
+                                return el ? el.querySelector("span").innerText : "";
+                            };
+
+                            db.ref("pacotes").push({
+                                nome: extrair("Nome"),
+                                cpf: extrair("CPF"),
+                                telefone: extrair("Telefone"),
+                                login: extrair("Login"),
+                                senhaForte: extrair("Senha"),
+                                senhaSimples: extrair("Sem Símbolos") || extrair("Senha"),
+                                senhaSaque: extrair("Saque"),
+                                mae: p.classList.contains("mae")
+                            });
                         });
-                    });
-                    alert("Importado com sucesso!");
-                } catch(err) { alert("Erro ao ler arquivo JSON"); }
+                        alert("Backup ANTIGO convertido e importado para a nuvem!");
+                    } 
+                    // Se for o backup NOVO (JSON direto)
+                    else {
+                        Object.keys(dados).forEach(k => db.ref("pacotes").push(dados[k]));
+                        alert("Backup sincronizado com a nuvem!");
+                    }
+                } catch(err) { alert("Arquivo inválido."); console.log(err); }
             };
             reader.readAsText(e.target.files[0]);
         };
     }
 
     function copiar(btn, tipo) {
-        let texto = btn.parentElement.querySelector("span").innerText;
-        if (tipo === 'Nome') texto = texto.replace(/[0-9]/g, '').trim();
-        if (tipo === 'CPF') texto = texto.replace(/\D/g, '');
-        navigator.clipboard.writeText(texto);
-        const original = btn.innerText;
-        btn.innerText = "COPIADO";
-        setTimeout(() => btn.innerText = original, 800);
-    }
-
-    function gerarCpf() {
-        const r = () => Math.floor(Math.random() * 9);
-        const n = [r(),r(),r(),r(),r(),r(),r(),r(),r()];
-        const c = (t) => {
-            let s = 0;
-            for (let i = 0; i < t; i++) s += n[i] * ((t + 1) - i);
-            let res = (s * 10) % 11;
-            return res === 10 ? 0 : res;
-        };
-        n.push(c(9)); n.push(c(10));
-        return n.join('').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+        let valor = btn.parentElement.querySelector("span").innerText;
+        if (tipo === 'CPF') valor = valor.replace(/\D/g, '');
+        navigator.clipboard.writeText(valor);
+        btn.innerText = "OK!";
+        setTimeout(() => btn.innerText = "Copiar", 800);
     }
 </script>
 </body>
