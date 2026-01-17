@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V7 ULTIMATE</title>
+    <title>DARCK METODOS</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -11,8 +11,40 @@
         #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
         .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; justify-content: center; margin-bottom: 20px; }
-        .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); transition: 0.3s; }
+        .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); transition: 0.3s; position: relative; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
+        
+        /* Botão Bônus Estilo Bola */
+        .btn-bonus { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            background: #fff; 
+            color: #000; 
+            padding: 5px 12px; 
+            border-radius: 20px; 
+            font-size: 0.65rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border: 2px solid transparent;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-bonus.coletado { 
+            background: #28a745; 
+            color: #fff; 
+        }
+        .btn-bonus::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
         p { margin: 10px 0; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; align-items: center; gap: 8px; }
         b { color: var(--primary); width: 130px; font-size: 0.75rem; text-transform: uppercase; }
         span { font-family: monospace; font-size: 0.95rem; color: #fff; flex-grow: 1; word-break: break-all; }
@@ -57,10 +89,6 @@
     const SENHA_ACESSO = "2323";
     const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
 
-    const nomesM = ["Gabriel", "Lucas", "Matheus", "Pedro", "Rafael", "João", "Felipe", "Bruno", "Tiago", "Rodrigo"];
-    const nomesF = ["Ana", "Maria", "Juliana", "Camila", "Fernanda", "Beatriz", "Larissa", "Patrícia", "Aline", "Letícia"];
-    const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida"];
-
     function verificarSenha() {
         if (document.getElementById("senhaInput").value === SENHA_ACESSO) {
             document.getElementById("bloqueio").style.display = "none";
@@ -103,7 +131,11 @@
                     {l: 'Saque', v: p.senhaSaque, k: 'senhaSaque', t: 'PADRAO'}
                 ];
 
-                let htmlCampos = `<p><b>Banco:</b> 
+                let htmlCampos = `
+                    <div class="btn-bonus ${p.bonus ? 'coletado' : ''}" onclick="atualizar('${id}', 'bonus', ${!p.bonus})">
+                        ${p.bonus ? 'BÔNUS COLETADO' : 'BÔNUS'}
+                    </div>
+                    <p><b>Banco:</b> 
                     <select class="bank-selector" onchange="atualizar('${id}', 'banco', this.value)">
                         <option value="${p.banco}">${p.banco}</option>
                         ${BANCOS_PADRAO.filter(b => b !== p.banco).map(b => `<option value="${b}">${b}</option>`).join('')}
@@ -127,19 +159,24 @@
             });
         });
 
+        // Funções de sistema mantidas
         window.abrirEdicao = (id, campo, valor) => {
             const novo = prompt(`Editar ${campo.toUpperCase()}:`, valor);
             if (novo !== null && novo !== "") atualizar(id, campo, novo);
         };
 
+        window.atualizar = (id, campo, valor) => db.ref(`pacotes/${id}`).update({[campo]: valor});
+        window.excluir = (id) => { if(confirm("Apagar?")) db.ref(`pacotes/${id}`).remove(); };
+        window.limparBanco = () => { if(confirm("Zerar tudo?")) db.ref("pacotes").remove(); };
+        
         window.gerarPacote = async () => {
             const btn = document.getElementById("btnGerar");
             btn.innerText = "GERANDO..."; btn.disabled = true;
             const gen = document.getElementById("generoGen").value;
-            const listaN = gen === 'masculino' ? nomesM : nomesF;
+            const listaN = gen === 'masculino' ? ["Gabriel", "Lucas", "Matheus", "Pedro", "Rafael", "João", "Felipe", "Bruno", "Tiago", "Rodrigo"] : ["Ana", "Maria", "Juliana", "Camila", "Fernanda", "Beatriz", "Larissa", "Patrícia", "Aline", "Letícia"];
+            const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida"];
             
-            let novoCpf;
-            let cpfUnico = false;
+            let novoCpf, cpfUnico = false;
             while(!cpfUnico){
                 novoCpf = gerarCpfReal();
                 const snap = await db.ref("pacotes").orderByChild("cpf").equalTo(novoCpf).once("value");
@@ -149,20 +186,12 @@
             const nomeFinal = `${random(listaN)} ${random(sobrenomes)} ${random(sobrenomes)}`;
             const ddd = random(["11","21","31","41","51","61","71","81","91","19"]);
 
-            const novo = {
-                nome: nomeFinal,
-                cpf: novoCpf,
-                telefone: `(${ddd}) 9${Math.floor(10000000 + Math.random() * 90000000)}`,
-                pix: novoCpf,
-                login: nomeFinal.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 8999),
-                senhaForte: gerarSenha(12, true),
-                senhaSimples: gerarSenha(10, false),
-                senhaSaque: Math.floor(100000 + Math.random() * 899999),
-                banco: BANCOS_PADRAO[0],
-                mae: false
-            };
-
-            await db.ref("pacotes").push(novo);
+            await db.ref("pacotes").push({
+                nome: nomeFinal, cpf: novoCpf, telefone: `(${ddd}) 9${Math.floor(10000000 + Math.random() * 90000000)}`,
+                pix: novoCpf, login: nomeFinal.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 8999),
+                senhaForte: gerarSenha(12, true), senhaSimples: gerarSenha(10, false),
+                senhaSaque: Math.floor(100000 + Math.random() * 899999), banco: BANCOS_PADRAO[0], mae: false, bonus: false
+            });
             btn.innerText = "GERAR CONTA ÚNICA"; btn.disabled = false;
         };
 
@@ -185,10 +214,6 @@
             };
             reader.readAsText(e.target.files[0]);
         };
-
-        window.atualizar = (id, campo, valor) => db.ref(`pacotes/${id}`).update({[campo]: valor});
-        window.excluir = (id) => { if(confirm("Apagar?")) db.ref(`pacotes/${id}`).remove(); };
-        window.limparBanco = () => { if(confirm("Zerar tudo?")) db.ref("pacotes").remove(); };
     }
 
     function gerarSenha(t, s) {
