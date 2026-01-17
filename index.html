@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>GERADOR DE DADOS</title>
+    <title>GERADOR DE DADOS - V28</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -11,26 +11,32 @@
         #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
         .header-stats { text-align: center; margin-bottom: 15px; }
-        .count-badge { background: var(--primary); color: white; padding: 8px 20px; border-radius: 50px; font-size: 1rem; font-weight: bold; display: inline-block; }
+        .count-badge { background: var(--primary); color: white; padding: 8px 20px; border-radius: 50px; font-size: 1rem; font-weight: normal; display: inline-block; }
         .tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 10px 0; border-bottom: 1px solid #222; }
-        .tab-btn { background: #222; color: #888; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
+        .tab-btn { background: #222; color: #888; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: normal; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; justify-content: center; margin-bottom: 20px; }
         .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); position: relative; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
-        .divisor-banco { background: #333; color: #fff; padding: 10px 15px; border-radius: 5px; margin: 25px 0 10px 0; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; }
-        .btn-bonus { position: absolute; top: 15px; right: 15px; background: #fff; color: #000; padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        .divisor-banco { background: #333; color: #fff; padding: 10px 15px; border-radius: 5px; margin: 25px 0 10px 0; font-size: 0.9rem; font-weight: normal; text-transform: uppercase; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; }
+        .btn-bonus { position: absolute; top: 15px; right: 15px; background: #fff; color: #000; padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; cursor: pointer; }
         .btn-bonus.coletado { background: #28a745; color: #fff; }
+        
+        /* REMOVIDO NEGRITO GERAL */
         p { margin: 10px 0; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-        b { color: var(--primary); width: 130px; font-size: 0.75rem; text-transform: uppercase; }
-        span { font-family: monospace; font-size: 0.95rem; color: #fff; flex-grow: 1; word-break: break-all; }
-        button { cursor: pointer; border: none; border-radius: 6px; padding: 6px 10px; font-weight: bold; transition: 0.2s; font-size: 0.7rem; }
+        b { color: var(--primary); width: 130px; font-size: 0.75rem; text-transform: uppercase; font-weight: normal; }
+        span { font-family: monospace; font-size: 0.95rem; color: #fff; flex-grow: 1; word-break: break-all; font-weight: normal; }
+        
+        /* TEXTO DO BANCO PERSONALIZADO */
+        .banco-txt { color: #00ff41; font-family: monospace; font-size: 0.9rem; margin-left: 5px; flex-grow: 1; }
+
+        button { cursor: pointer; border: none; border-radius: 6px; padding: 6px 10px; transition: 0.2s; font-size: 0.7rem; font-weight: normal; }
         .btn-gen { background: var(--primary); color: white; padding: 12px 20px; font-size: 0.8rem; }
         .btn-copy { background: #333; color: #ccc; }
         .btn-edit { background: #222; color: #007bff; border: 1px solid #007bff33; }
         .btn-del { background: #3d0000; color: #ff4d4d; }
         select { padding: 8px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; cursor: pointer; font-size: 0.8rem; }
-        .bank-selector { color: #00ff41 !important; border-color: #00ff41 !important; font-weight: bold; width: 150px; }
+        .bank-selector { color: #aaa !important; border-color: #444 !important; width: 140px; font-weight: normal; }
     </style>
 </head>
 <body>
@@ -85,7 +91,6 @@
     }
 
     function gerarTelefoneBrasil() {
-        // Todos os DDDs reais do Brasil
         const ddds = [11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99];
         const ddd = ddds[Math.floor(Math.random() * ddds.length)];
         const p1 = Math.floor(Math.random() * 9000) + 1000;
@@ -173,6 +178,7 @@
                         <option value="SELECIONE" ${p.banco === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
                         ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco.includes(b) ? 'selected' : ''}>${b}</option>`).join('')}
                     </select>
+                    <span class="banco-txt">${p.banco !== 'SELECIONE' ? p.banco : ''}</span>
                     <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button>
                 </p>
                 <p><b>Nome:</b> <span>${nExibicao} ${p.nome}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${p.nome}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
@@ -239,7 +245,7 @@
         firebase.database().ref("pacotes").once("value", s => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_v25.json`; a.click();
+            a.download = `backup_v28.json`; a.click();
         });
     };
     window.importarBanco = (e) => {
