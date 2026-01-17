@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V22 SEGURANÇA MÁXIMA</title>
+    <title>GERADOR DE DADOS</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -67,7 +67,7 @@
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-        <div id="lista">Fortalecendo senhas...</div>
+        <div id="lista">Sincronizando...</div>
     </div>
 
 <script>
@@ -99,8 +99,17 @@
         return nome.replace(/^[0-9\s\-\.]+/, "").replace(/[0-9\s\-\.]+$/, "").trim();
     }
 
-    function gerarSenhaUltra(tamanho = 16) {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%¨&*()_+=-[]{}|;:,.<>?";
+    function gerarSenhaForte(tamanho = 16) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()";
+        let senha = "";
+        for (let i = 0; i < tamanho; i++) {
+            senha += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return senha;
+    }
+
+    function gerarSenhaSimples(tamanho = 12) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         let senha = "";
         for (let i = 0; i < tamanho; i++) {
             senha += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -179,11 +188,13 @@
                     <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button>
                 </p>
                 <p><b>Nome:</b> <span>${nExibicao} ${nomeLimpo}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${nomeLimpo}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Login:</b> <span>${p.login}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Senha F:</b> <span style="color:#ff00ff">${p.senhaForte}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Senha S:</b> <span style="color:#00ffff">${p.senhaSimples}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Saque:</b> <span style="color:#ffff00">${p.senhaSaque}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'telefone', '${p.telefone}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Chave PIX:</b> <span>${p.pix || p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'pix', '${p.pix || p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Login:</b> <span>${p.login}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'login', '${p.login}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Senha F:</b> <span style="color:#ff00ff">${p.senhaForte}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaForte', '${p.senhaForte}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Senha S:</b> <span style="color:#00ffff">${p.senhaSimples}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSimples', '${p.senhaSimples}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                <p><b>Saque:</b> <span style="color:#ffff00">${p.senhaSaque}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSaque', '${p.senhaSaque}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <div style="display:flex; gap:10px; margin-top:10px">
                     <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="atualizar('${p.id}', 'mae', ${!p.mae})">${p.mae?'★ MÃE ATIVA':'MARCAR MÃE'}</button>
                     <button class="btn-del" onclick="excluir('${p.id}')">EXCLUIR</button>
@@ -211,13 +222,12 @@
         await firebase.database().ref("pacotes").push({
             nome: nome, cpf: gerarCpfReal(), pix: "CPF", telefone: `(11) 9${Math.floor(70000+Math.random()*20000)}-${Math.floor(1000+Math.random()*8999)}`,
             login: nome.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 8999),
-            senhaForte: gerarSenhaUltra(16),
-            senhaSimples: gerarSenhaUltra(14), 
+            senhaForte: gerarSenhaForte(16),
+            senhaSimples: gerarSenhaSimples(12), 
             senhaSaque: Math.floor(100000 + Math.random() * 899999),
             banco: "SELECIONE", mae: false, bonus: false
         });
         btn.innerText = "GERAR CONTA ÚNICA"; btn.disabled = false;
-        categoriaAtual = "Outros";
     };
 
     function gerarCpfReal() {
@@ -242,7 +252,7 @@
         firebase.database().ref("pacotes").once("value", s => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_darck_v22.json`; a.click();
+            a.download = `backup_v23.json`; a.click();
         });
     };
     window.importarBanco = (e) => {
