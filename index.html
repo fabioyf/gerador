@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V9 CATEGORIAS</title>
+    <title>GERADOR DE DADOS</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -12,7 +12,7 @@
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
         
         /* Menu de Categorias */
-        .tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 10px 0; }
+        .tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 10px 0; border-bottom: 1px solid #222; }
         .tab-btn { background: #222; color: #888; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; transition: 0.3s; }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; box-shadow: 0 0 10px rgba(0,123,255,0.4); }
         .tab-btn span { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-size: 0.65rem; }
@@ -21,6 +21,9 @@
         .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); transition: 0.3s; position: relative; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
         
+        /* Separador Visual de Banco */
+        .divisor-banco { background: #333; color: #fff; padding: 5px 15px; border-radius: 5px; margin: 20px 0 10px 0; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #fff; }
+
         .btn-bonus { position: absolute; top: 15px; right: 15px; background: #fff; color: #000; padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; }
         .btn-bonus.coletado { background: #28a745; color: #fff; }
 
@@ -46,13 +49,11 @@
     </div>
 
     <div id="conteudo">
-        <center>
-            <div id="contador" class="count-badge">Contas na Nuvem: 0</div>
-        </center>
+        <center><div id="contador" class="count-badge">Carregando...</div></center>
 
         <div class="tabs-container" id="tabsCategorias">
-            <button class="tab-btn active" onclick="filtrarCategoria('TODOS')">TODOS <span id="count-TODOS">0</span></button>
-            </div>
+            <button class="tab-btn active">TODOS <span>0</span></button>
+        </div>
 
         <div class="controls">
             <select id="generoGen">
@@ -65,7 +66,7 @@
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-        <div id="lista">Conectando...</div>
+        <div id="lista">Conectando ao Firebase...</div>
     </div>
 
 <script>
@@ -84,7 +85,6 @@
         }
     }
 
-    // Função que identifica o banco mesmo com nome personalizado
     function detectarBancoPrincipal(nomeBanco) {
         if(!nomeBanco) return "Outros";
         const nomeBaixo = nomeBanco.toLowerCase();
@@ -97,16 +97,11 @@
     function filtrarCategoria(cat) {
         categoriaAtual = cat;
         renderizarLista();
-        // Atualiza estilo dos botões
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText.includes(cat));
-        });
     }
 
     function iniciarApp() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
         db.ref("pacotes").on("value", (snapshot) => {
             dadosGlobais = snapshot.val() || {};
             renderizarLista();
@@ -119,19 +114,30 @@
         const contadorDiv = document.getElementById("contador");
         listaDiv.innerHTML = "";
         
-        const counts = { TODOS: 0 };
+        let counts = { TODOS: 0 };
         BANCOS_LISTA.forEach(b => counts[b] = 0);
 
-        const keys = Object.keys(dadosGlobais).reverse();
-        
-        // Primeiro, conta tudo para as abas
-        keys.forEach(id => {
-            counts.TODOS++;
-            const bPrincipal = detectarBancoPrincipal(dadosGlobais[id].banco);
-            counts[bPrincipal]++;
+        // Converter objeto em array para poder ordenar
+        let arrayContas = Object.keys(dadosGlobais).map(id => {
+            return { id, ...dadosGlobais[id], bPrincipal: detectarBancoPrincipal(dadosGlobais[id].banco) };
         });
 
-        // Atualiza as abas visualmente
+        // --- LÓGICA DE ORDENAÇÃO ---
+        // 1. Organiza por Banco (A-Z)
+        // 2. Se for o mesmo banco, organiza por ID (mais novos primeiro)
+        arrayContas.sort((a, b) => {
+            if (a.bPrincipal < b.bPrincipal) return -1;
+            if (a.bPrincipal > b.bPrincipal) return 1;
+            return b.id.localeCompare(a.id); 
+        });
+
+        // Contagem para as abas
+        arrayContas.forEach(p => {
+            counts.TODOS++;
+            counts[p.bPrincipal]++;
+        });
+
+        // Renderizar Abas
         let tabsHtml = `<button class="tab-btn ${categoriaAtual==='TODOS'?'active':''}" onclick="filtrarCategoria('TODOS')">TODOS <span>${counts.TODOS}</span></button>`;
         BANCOS_LISTA.forEach(b => {
             if(counts[b] > 0 || b === "Outros") {
@@ -141,45 +147,51 @@
         tabsDiv.innerHTML = tabsHtml;
         contadorDiv.innerText = `Contas na Nuvem: ${counts.TODOS}`;
 
-        // Renderiza os cards filtrados
-        keys.forEach(id => {
-            const p = dadosGlobais[id];
-            const bPrincipal = detectarBancoPrincipal(p.banco);
+        let ultimoBancoRenderizado = "";
 
-            if (categoriaAtual !== "TODOS" && categoriaAtual !== bPrincipal) return;
+        // Renderizar Cards
+        arrayContas.forEach(p => {
+            if (categoriaAtual !== "TODOS" && categoriaAtual !== p.bPrincipal) return;
+
+            // Adiciona divisor visual se o banco mudar (apenas na aba TODOS)
+            if (categoriaAtual === "TODOS" && p.bPrincipal !== ultimoBancoRenderizado) {
+                const divSep = document.createElement("div");
+                divSep.className = "divisor-banco";
+                divSep.innerText = p.bPrincipal;
+                listaDiv.appendChild(divSep);
+                ultimoBancoRenderizado = p.bPrincipal;
+            }
 
             const div = document.createElement("div");
             div.className = `pacote ${p.mae ? 'mae' : ''}`;
-            
             div.innerHTML = `
-                <div class="btn-bonus ${p.bonus ? 'coletado' : ''}" onclick="atualizar('${id}', 'bonus', ${!p.bonus})">
+                <div class="btn-bonus ${p.bonus ? 'coletado' : ''}" onclick="atualizar('${p.id}', 'bonus', ${!p.bonus})">
                     ${p.bonus ? 'BÔNUS COLETADO' : 'BÔNUS'}
                 </div>
                 <p><b>Banco:</b> 
-                    <select class="bank-selector" onchange="atualizar('${id}', 'banco', this.value)">
+                    <select class="bank-selector" onchange="atualizar('${p.id}', 'banco', this.value)">
                         <option value="${p.banco}">${p.banco}</option>
                         ${BANCOS_LISTA.filter(b => b !== p.banco && b !== "Outros").map(b => `<option value="${b}">${b}</option>`).join('')}
                     </select>
-                    <button class="btn-edit" onclick="abrirEdicao('${id}', 'banco', '${p.banco}')">Personalizar</button>
+                    <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Personalizar</button>
                     <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button>
                 </p>
-                <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-edit" onclick="abrirEdicao('${id}', 'nome', '${p.nome}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'NOME')">Copiar</button></p>
-                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>PIX:</b> <span>${p.pix || p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${id}', 'pix', '${p.pix || p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-edit" onclick="abrirEdicao('${id}', 'telefone', '${p.telefone}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Login:</b> <span>${p.login}</span> <button class="btn-edit" onclick="abrirEdicao('${id}', 'login', '${p.login}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button></p>
-                <p><b>Senha F:</b> <span>${p.senhaForte}</span> <button class="btn-edit" onclick="abrirEdicao('${id}', 'senhaForte', '${p.senhaForte}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button></p>
-                <p><b>Senha S:</b> <span>${p.senhaSimples}</span> <button class="btn-edit" onclick="abrirEdicao('${id}', 'senhaSimples', '${p.senhaSimples}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button></p>
-                <p><b>Saque:</b> <span>${p.senhaSaque}</span> <button class="btn-edit" onclick="abrirEdicao('${id}', 'senhaSaque', '${p.senhaSaque}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button></p>
+                <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this, 'NOME')">Copiar</button></p>
+                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>PIX:</b> <span>${p.pix || p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'pix', '${p.pix || p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                <p><b>Login:</b> <span>${p.login}</span> <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button></p>
+                <p><b>Senha F:</b> <span>${p.senhaForte}</span> <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button></p>
+                <p><b>Senha S:</b> <span>${p.senhaSimples}</span> <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button></p>
+                <p><b>Saque:</b> <span>${p.senhaSaque}</span> <button class="btn-copy" onclick="copiar(this, 'PADRAO')">Copiar</button></p>
                 <div style="display:flex; gap:10px; margin-top:10px">
-                    <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="atualizar('${id}', 'mae', ${!p.mae})">${p.mae?'★ MÃE ATIVA':'MARCAR MÃE'}</button>
-                    <button class="btn-del" onclick="excluir('${id}')">EXCLUIR</button>
+                    <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="atualizar('${p.id}', 'mae', ${!p.mae})">${p.mae?'★ MÃE ATIVA':'MARCAR MÃE'}</button>
+                    <button class="btn-del" onclick="excluir('${p.id}')">EXCLUIR</button>
                 </div>`;
             listaDiv.appendChild(div);
         });
     }
 
-    // --- Funções de DB ---
+    // Funções auxiliares mantidas
     window.atualizar = (id, campo, valor) => firebase.database().ref(`pacotes/${id}`).update({[campo]: valor});
     window.excluir = (id) => { if(confirm("Apagar?")) firebase.database().ref(`pacotes/${id}`).remove(); };
     window.abrirEdicao = (id, campo, valor) => {
@@ -188,7 +200,6 @@
     };
     window.limparBanco = () => { if(confirm("Zerar tudo?")) firebase.database().ref("pacotes").remove(); };
 
-    // --- Gerador e Outros ---
     window.gerarPacote = async () => {
         const btn = document.getElementById("btnGerar");
         btn.innerText = "GERANDO..."; btn.disabled = true;
@@ -197,7 +208,6 @@
         const subs = ["Silva", "Santos", "Oliveira", "Souza", "Pereira"];
         const nomeFinal = `${nomes[Math.floor(Math.random()*nomes.length)]} ${subs[Math.floor(Math.random()*subs.length)]} ${subs[Math.floor(Math.random()*subs.length)]}`;
         const novoCpf = gerarCpfReal();
-        
         await firebase.database().ref("pacotes").push({
             nome: nomeFinal, cpf: novoCpf, telefone: `(11) 9${Math.floor(10000000 + Math.random() * 90000000)}`,
             pix: novoCpf, login: nomeFinal.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 8999),
