@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V16 FINAL</title>
+    <title>DARCK METODOS - V17 ORGANIZADA</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -22,10 +22,12 @@
         .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); position: relative; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
         
-        .divisor-banco { background: #333; color: #fff; padding: 5px 15px; border-radius: 5px; margin: 20px 0 10px 0; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; border-left: 4px solid #fff; }
+        .divisor-banco { background: #333; color: #fff; padding: 8px 15px; border-radius: 5px; margin: 25px 0 10px 0; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; }
 
         .btn-bonus { position: absolute; top: 15px; right: 15px; background: #fff; color: #000; padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
         .btn-bonus.coletado { background: #28a745; color: #fff; }
+
+        .item-num { background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-right: 10px; }
 
         p { margin: 10px 0; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; align-items: center; gap: 8px; }
         b { color: var(--primary); width: 130px; font-size: 0.75rem; text-transform: uppercase; }
@@ -38,7 +40,6 @@
         .btn-del { background: #3d0000; color: #ff4d4d; }
         
         input, select { padding: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: white; }
-        select.bank-selector { color: #00ff41; border: 1px solid #00ff41; padding: 5px; }
     </style>
 </head>
 <body>
@@ -67,7 +68,7 @@
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-        <div id="lista">Sincronizando...</div>
+        <div id="lista">Sincronizando banco de dados...</div>
     </div>
 
 <script>
@@ -94,11 +95,11 @@
         });
     }
 
-    function gerarTextoAleatorio(tamanho, usarSimbolos) {
-        let charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        if (usarSimbolos) charset += "!@#$%&*";
+    function gerarAleatorio(lista) { return lista[Math.floor(Math.random() * lista.length)]; }
+
+    function gerarString(tamanho, chars) {
         let res = "";
-        for (let i = 0; i < tamanho; i++) res += charset.charAt(Math.floor(Math.random() * charset.length));
+        for (let i = 0; i < tamanho; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
         return res;
     }
 
@@ -122,10 +123,12 @@
             return { id, ...dadosGlobais[id], bPrincipal: detectarBancoPrincipal(dadosGlobais[id].banco) };
         });
 
+        // Ordenação por Banco
         arrayContas.sort((a, b) => a.bPrincipal.localeCompare(b.bPrincipal));
         arrayContas.forEach(p => { counts.TODOS++; counts[p.bPrincipal]++; });
         contadorDiv.innerText = `Contas na Nuvem: ${counts.TODOS}`;
 
+        // Gerar Abas
         let tabsHtml = `<button class="tab-btn ${categoriaAtual==='TODOS'?'active':''}" onclick="categoriaAtual='TODOS';renderizarLista()">TODOS <span>${counts.TODOS}</span></button>`;
         BANCOS_LISTA.forEach(b => { if(counts[b] > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual===b?'active':''}" onclick="categoriaAtual='${b}';renderizarLista()">${b.toUpperCase()} <span>${counts[b]}</span></button>`; });
         if(counts.Personalizado > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Personalizado'?'active':''}" onclick="categoriaAtual='Personalizado';renderizarLista()">PERS. <span>${counts.Personalizado}</span></button>`;
@@ -133,22 +136,27 @@
         tabsDiv.innerHTML = tabsHtml;
 
         let ultimoBanco = "";
+        let contadorPorBanco = 0;
+
         arrayContas.forEach(p => {
             if (categoriaAtual !== "TODOS" && categoriaAtual !== p.bPrincipal) return;
-            if (categoriaAtual === "TODOS" && p.bPrincipal !== ultimoBanco) {
+
+            if (p.bPrincipal !== ultimoBanco) {
+                contadorPorBanco = 1; // Reinicia contagem para o novo banco
                 const divSep = document.createElement("div");
                 divSep.className = "divisor-banco";
-                divSep.innerText = p.bPrincipal;
+                divSep.innerHTML = `<span>${p.bPrincipal}</span> <span>Total: ${counts[p.bPrincipal]}</span>`;
                 listaDiv.appendChild(divSep);
                 ultimoBanco = p.bPrincipal;
+            } else {
+                contadorPorBanco++;
             }
 
             const div = document.createElement("div");
             div.className = `pacote ${p.mae ? 'mae' : ''}`;
             div.innerHTML = `
                 <div class="btn-bonus ${p.bonus ? 'coletado' : ''}" onclick="atualizar('${p.id}', 'bonus', ${!p.bonus})">BÔNUS</div>
-                <p><b>Banco:</b> <span style="color:#00ff41">${p.banco}</span>
-                    <select class="bank-selector" onchange="atualizar('${p.id}', 'banco', this.value)"><option value="">Trocar...</option>${BANCOS_LISTA.map(b => `<option value="${b}">${b}</option>`).join('')}</select>
+                <p><span class="item-num">#${contadorPorBanco}</span> <b>Banco:</b> <span style="color:#00ff41">${p.banco}</span>
                     <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'banco', '${p.banco}')">Edit</button></p>
                 <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${p.nome}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                 <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
@@ -167,7 +175,7 @@
     }
 
     window.atualizar = (id, campo, valor) => { if(valor) firebase.database().ref(`pacotes/${id}`).update({[campo]: valor}); };
-    window.excluir = (id) => { if(confirm("Apagar?")) firebase.database().ref(`pacotes/${id}`).remove(); };
+    window.excluir = (id) => { if(confirm("Apagar conta?")) firebase.database().ref(`pacotes/${id}`).remove(); };
     window.abrirEdicao = (id, campo, valor) => {
         const novo = prompt(`Editar ${campo.toUpperCase()}:`, valor);
         if (novo !== null) atualizar(id, campo, novo);
@@ -176,27 +184,36 @@
     window.gerarPacote = async () => {
         const btn = document.getElementById("btnGerar");
         btn.innerText = "GERANDO..."; btn.disabled = true;
-        
-        const nomesM = ["Ricardo", "Adilson", "Fabricio", "Vagner", "Roberto", "Marcos", "Leandro", "Claudio", "Alexandre"];
-        const nomesF = ["Patricia", "Luciana", "Renata", "Simone", "Adriana", "Tatiana", "Beatriz", "Eliane", "Celia"];
-        const sobrenomes = ["Cardoso", "Mendes", "Teixeira", "Batista", "Moraes", "Farias", "Vieira", "Andrade", "Nunes", "Correa"];
-        
+
+        const pMas = ["Joao", "Pedro", "Gabriel", "Lucas", "Mateus", "Rafael", "Bruno", "Felipe", "Rodrigo", "Marcelo", "Andre", "Ricardo", "Fernando", "Alex", "Gustavo"];
+        const pFem = ["Ana", "Maria", "Julia", "Beatriz", "Camila", "Fernanda", "Larissa", "Paula", "Juliana", "Renata", "Isabela", "Letitia", "Amanda", "Vanessa", "Bruna"];
+        const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes", "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira", "Barbosa", "Machado"];
+
         const gen = document.getElementById("generoGen").value;
-        const nBase = gen === 'masculino' ? nomesM[Math.floor(Math.random()*nomesM.length)] : nomesF[Math.floor(Math.random()*nomesF.length)];
-        const nomeFinal = `${nBase} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]} ${Math.floor(Math.random()*99)}`;
+        const n1 = gerarAleatorio(gen === 'masculino' ? pMas : pFem);
+        const n2 = gerarAleatorio(gen === 'masculino' ? pMas : pFem);
+        const s1 = gerarAleatorio(sobrenomes);
+        const s2 = gerarAleatorio(sobrenomes);
+        const s3 = gerarAleatorio(sobrenomes);
         
-        const cpf = gerarCpfReal();
-        const tel = `(11) 9${Math.floor(7000 + Math.random()*2000)}-${Math.floor(1000 + Math.random()*8999)}`;
+        // Nome composto com 2 ou 3 sobrenomes para infinita variedade
+        const nomeFinal = `${n1} ${n2} ${s1} ${s2} ${s3}`;
+        const loginFinal = n1.toLowerCase() + gerarString(4, "0123456789");
 
         await firebase.database().ref("pacotes").push({
-            nome: nomeFinal, cpf: cpf, pix: cpf, telefone: tel,
-            login: nBase.toLowerCase() + Math.floor(100 + Math.random() * 8999),
-            senhaForte: gerarTextoAleatorio(12, true),
-            senhaSimples: gerarTextoAleatorio(8, false), // Sem símbolos
-            senhaSaque: Math.floor(100000 + Math.random() * 899999),
-            banco: "SELECIONE", mae: false, bonus: false
+            nome: nomeFinal,
+            cpf: gerarCpfReal(),
+            pix: "CPF",
+            telefone: `(11) 9${gerarString(4, "789")}${gerarString(1, "0123456789")}-${gerarString(4, "0123456789")}`,
+            login: loginFinal,
+            senhaForte: gerarString(4, "ABCDEF") + gerarString(4, "123456789") + "@#",
+            senhaSimples: gerarString(8, "abcdefghijklmnopqrstuvwxyz0123456789"),
+            senhaSaque: gerarString(6, "0123456789"),
+            banco: "SELECIONE",
+            mae: false,
+            bonus: false
         });
-        
+
         btn.innerText = "GERAR CONTA ÚNICA"; btn.disabled = false;
         categoriaAtual = "Outros";
     };
@@ -222,7 +239,7 @@
         firebase.database().ref("pacotes").once("value", s => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_v16.json`; a.click();
+            a.download = `backup_v17.json`; a.click();
         });
     };
     window.importarBanco = (e) => {
