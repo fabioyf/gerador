@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V19 FINAL</title>
+    <title>DARCK METODOS - V20 PREMIUM</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -22,7 +22,7 @@
         .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); position: relative; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
         
-        .divisor-banco { background: #333; color: #fff; padding: 10px 15px; border-radius: 5px; margin: 25px 0 10px 0; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; border-left: 5px solid var(--primary); }
+        .divisor-banco { background: #333; color: #fff; padding: 10px 15px; border-radius: 5px; margin: 25px 0 10px 0; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; }
 
         .btn-bonus { position: absolute; top: 15px; right: 15px; background: #fff; color: #000; padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
         .btn-bonus.coletado { background: #28a745; color: #fff; }
@@ -67,7 +67,7 @@
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
-        <div id="lista">Sincronizando...</div>
+        <div id="lista">Organizando Banco...</div>
     </div>
 
 <script>
@@ -94,10 +94,8 @@
         });
     }
 
-    // Função para limpar QUALQUER número ou símbolo de contagem antiga do nome
     function limparNomeTotal(nome) {
         if (!nome) return "";
-        // Remove números, traços e espaços no início e fim do nome
         return nome.replace(/^[0-9\s\-\.]+/, "").replace(/[0-9\s\-\.]+$/, "").trim();
     }
 
@@ -117,35 +115,44 @@
         let counts = { TODOS: 0, Outros: 0, Personalizado: 0 };
         BANCOS_LISTA.forEach(b => counts[b] = 0);
 
+        // Transforma objeto em Array e adiciona a detecção de banco
         let arrayContas = Object.keys(dadosGlobais).map(id => {
             return { id, ...dadosGlobais[id], bPrincipal: detectarBancoPrincipal(dadosGlobais[id].banco) };
         });
 
-        // Ordem crescente (mais antiga para mais nova)
-        arrayContas.sort((a, b) => a.id.localeCompare(b.id));
+        // --- CORREÇÃO DO BUG: ORDENAÇÃO POR BANCO PRIMEIRO ---
+        arrayContas.sort((a, b) => {
+            if (a.bPrincipal < b.bPrincipal) return -1;
+            if (a.bPrincipal > b.bPrincipal) return 1;
+            return a.id.localeCompare(b.id); // Depois por data de criação
+        });
+
         arrayContas.forEach(p => { counts.TODOS++; counts[p.bPrincipal]++; });
         contadorDiv.innerText = `Contas na Nuvem: ${counts.TODOS}`;
 
-        // Renderizar Abas
         let tabsHtml = `<button class="tab-btn ${categoriaAtual==='TODOS'?'active':''}" onclick="categoriaAtual='TODOS';renderizarLista()">TODOS <span>${counts.TODOS}</span></button>`;
         BANCOS_LISTA.forEach(b => { if(counts[b] > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual===b?'active':''}" onclick="categoriaAtual='${b}';renderizarLista()">${b.toUpperCase()} <span>${counts[b]}</span></button>`; });
         if(counts.Personalizado > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Personalizado'?'active':''}" onclick="categoriaAtual='Personalizado';renderizarLista()">PERS. <span>${counts.Personalizado}</span></button>`;
         if(counts.Outros > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Outros'?'active':''}" onclick="categoriaAtual='Outros';renderizarLista()">NOVAS <span>${counts.Outros}</span></button>`;
         tabsDiv.innerHTML = tabsHtml;
 
-        let contadorBanco = {};
+        let contadorBancoInterno = {};
+        let ultimoBancoMostrado = "";
 
         arrayContas.forEach(p => {
+            // Contagem precisa acontecer para todos, para o número do nome ser real
+            contadorBancoInterno[p.bPrincipal] = (contadorBancoInterno[p.bPrincipal] || 0) + 1;
+            let nExibicao = contadorBancoInterno[p.bPrincipal];
+
             if (categoriaAtual !== "TODOS" && categoriaAtual !== p.bPrincipal) return;
 
-            contadorBanco[p.bPrincipal] = (contadorBanco[p.bPrincipal] || 0) + 1;
-            let nExibicao = contadorBanco[p.bPrincipal];
-
-            if (categoriaAtual === "TODOS" && nExibicao === 1) {
+            // Mostrar divisor apenas se o banco mudar na lista ordenada
+            if (p.bPrincipal !== ultimoBancoMostrado) {
                 const divSep = document.createElement("div");
                 divSep.className = "divisor-banco";
-                divSep.innerText = p.bPrincipal;
+                divSep.innerHTML = `<span>${p.bPrincipal}</span> <span>Total: ${counts[p.bPrincipal]}</span>`;
                 listaDiv.appendChild(divSep);
+                ultimoBancoMostrado = p.bPrincipal;
             }
 
             const nomeLimpo = limparNomeTotal(p.nome);
@@ -176,10 +183,7 @@
         });
     }
 
-    window.atualizar = (id, campo, valor) => { 
-        firebase.database().ref(`pacotes/${id}`).update({[campo]: valor}); 
-    };
-
+    window.atualizar = (id, campo, valor) => { firebase.database().ref(`pacotes/${id}`).update({[campo]: valor}); };
     window.excluir = (id) => { if(confirm("Apagar conta?")) firebase.database().ref(`pacotes/${id}`).remove(); };
     window.abrirEdicao = (id, campo, valor) => {
         const novo = prompt(`Editar ${campo.toUpperCase()}:`, valor);
@@ -189,9 +193,9 @@
     window.gerarPacote = async () => {
         const btn = document.getElementById("btnGerar");
         btn.innerText = "GERANDO..."; btn.disabled = true;
-        const pM = ["Ricardo", "Adilson", "Fabricio", "Vagner", "Roberto", "Marcos", "Leandro", "Claudio", "Alexandre", "Joao", "Pedro", "Gabriel", "Lucas"];
-        const pF = ["Patricia", "Luciana", "Renata", "Simone", "Adriana", "Tatiana", "Beatriz", "Eliane", "Celia", "Ana", "Maria", "Julia", "Isabela"];
-        const s = ["Cardoso", "Mendes", "Teixeira", "Batista", "Moraes", "Farias", "Vieira", "Andrade", "Nunes", "Correa", "Silva", "Santos", "Oliveira"];
+        const pM = ["Ricardo", "Adilson", "Fabricio", "Vagner", "Roberto", "Marcos", "Leandro", "Claudio", "Alexandre", "Joao", "Pedro", "Gabriel"];
+        const pF = ["Patricia", "Luciana", "Renata", "Simone", "Adriana", "Tatiana", "Beatriz", "Eliane", "Celia", "Ana", "Maria", "Julia"];
+        const s = ["Cardoso", "Mendes", "Teixeira", "Batista", "Moraes", "Farias", "Vieira", "Andrade", "Nunes", "Correa", "Silva", "Santos"];
         const gen = document.getElementById("generoGen").value;
         const nome = `${gen==='masculino'?pM[Math.floor(Math.random()*pM.length)]:pF[Math.floor(Math.random()*pF.length)]} ${s[Math.floor(Math.random()*s.length)]} ${s[Math.floor(Math.random()*s.length)]}`;
         
@@ -217,10 +221,7 @@
     function copiar(btn, tipo) {
         let span = btn.parentElement.querySelector("span");
         let t = span.innerText;
-        // Se for o nome, remove o número da exibição (ex: "1 ")
-        if (span.parentElement.innerHTML.includes("Nome:")) {
-            t = t.replace(/^[0-9]+\s/, "");
-        }
+        if (span.parentElement.innerHTML.includes("Nome:")) t = t.replace(/^[0-9]+\s/, "");
         if (tipo === 'LIMPO') t = t.replace(/\D/g, '');
         navigator.clipboard.writeText(t);
         const o = btn.innerText; btn.innerText = "OK";
@@ -231,7 +232,7 @@
         firebase.database().ref("pacotes").once("value", s => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_darck.json`; a.click();
+            a.download = `backup_v20.json`; a.click();
         });
     };
     window.importarBanco = (e) => {
