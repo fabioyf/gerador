@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DARCK METODOS - V3 ULTIMATE</title>
+    <title>DARCK METODOS - V4 ELITE</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -10,17 +10,16 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #conteudo { display: none; max-width: 900px; margin: 0 auto; }
-        .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; justify-content: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); position: relative; transition: 0.3s; }
+        .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; justify-content: center; margin-bottom: 20px; }
+        .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); transition: 0.3s; }
         .pacote.mae { border-left-color: #ff9800; background: #221a05; }
         p { margin: 10px 0; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; align-items: center; gap: 10px; }
         b { color: var(--primary); width: 140px; font-size: 0.8rem; text-transform: uppercase; }
-        span { font-family: monospace; font-size: 0.95rem; color: #fff; flex-grow: 1; word-break: break-all; }
+        span { font-family: monospace; font-size: 0.95rem; color: #fff; flex-grow: 1; }
         button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 12px; font-weight: bold; transition: 0.2s; }
         .btn-gen { background: var(--primary); color: white; padding: 12px 20px; }
-        .btn-copy { background: #333; color: #ccc; font-size: 0.7rem; min-width: 60px; }
+        .btn-copy { background: #333; color: #ccc; font-size: 0.7rem; min-width: 65px; }
         .btn-del { background: #3d0000; color: #ff4d4d; }
-        .btn-io { background: #444; color: #fff; }
         select.bank-selector { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 5px; border-radius: 4px; font-weight: bold; }
         input, select { padding: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: white; }
     </style>
@@ -29,7 +28,7 @@
 
     <div id="bloqueio">
         <h1 style="color:var(--primary)">DARCK METODOS</h1>
-        <input type="password" id="senhaInput" placeholder="PIN ACESSO" style="text-align:center">
+        <input type="password" id="senhaInput" placeholder="PIN" style="text-align:center">
         <button class="btn-gen" style="margin-top:10px; width:180px" onclick="verificarSenha()">ENTRAR</button>
     </div>
 
@@ -40,8 +39,8 @@
                 <option value="feminino">Feminino</option>
             </select>
             <button class="btn-gen" id="btnGerar" onclick="gerarPacote()">GERAR CONTA ÚNICA</button>
-            <button class="btn-io" onclick="exportarBanco()">EXPORTAR JSON</button>
-            <button class="btn-io" onclick="document.getElementById('fileIn').click()">IMPORTAR JSON</button>
+            <button style="background:#444; color:white;" onclick="exportarBanco()">EXPORTAR</button>
+            <button style="background:#444; color:white;" onclick="document.getElementById('fileIn').click()">IMPORTAR</button>
             <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
             <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
         </div>
@@ -49,14 +48,15 @@
     </div>
 
 <script>
-    // --- CONFIGURAÇÃO ---
     const BANCOS = ["Nubank", "Mercado Pago", "PagBank", "PicPay", "Inter", "C6 Bank", "Caixa"];
+    const DDDs = ["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"];
+    
     const SENHA_ACESSO = "2323";
     const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
 
-    const nomesM = ["Gabriel", "Lucas", "Matheus", "Pedro", "Rafael", "João", "Felipe", "Bruno", "Tiago", "Rodrigo", "André", "Leonardo", "Vinícius", "Eduardo", "Diego", "Samuel", "Gustavo", "Igor"];
-    const nomesF = ["Ana", "Maria", "Juliana", "Camila", "Fernanda", "Beatriz", "Larissa", "Patrícia", "Aline", "Letícia", "Amanda", "Vanessa", "Jessica", "Isabela", "Giovanna", "Renata", "Elaine"];
-    const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida", "Costa", "Nascimento", "Gomes", "Martins", "Araújo", "Melo", "Barbosa"];
+    const nomesM = ["Gabriel", "Lucas", "Matheus", "Pedro", "Rafael", "João", "Felipe", "Bruno", "Tiago", "Rodrigo", "André", "Leonardo", "Vinícius", "Eduardo", "Diego"];
+    const nomesF = ["Ana", "Maria", "Juliana", "Camila", "Fernanda", "Beatriz", "Larissa", "Patrícia", "Aline", "Letícia", "Amanda", "Vanessa", "Jessica", "Isabela"];
+    const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida", "Costa", "Gomes", "Martins"];
 
     function verificarSenha() {
         if (document.getElementById("senhaInput").value === SENHA_ACESSO) {
@@ -74,7 +74,7 @@
             const listaDiv = document.getElementById("lista");
             listaDiv.innerHTML = "";
             const data = snapshot.val();
-            if (!data) return listaDiv.innerHTML = "<center>Nenhum dado salvo.</center>";
+            if (!data) return listaDiv.innerHTML = "<center>Nenhum dado.</center>";
 
             Object.keys(data).reverse().forEach(id => {
                 const p = data[id];
@@ -86,13 +86,13 @@
                             ${BANCOS.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('')}
                         </select>
                     </p>
-                    <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                    <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'CPF')">Copiar</button></p>
-                    <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                    <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this, 'NOME')">Copiar</button></p>
+                    <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
+                    <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
                     <p><b>Login:</b> <span>${p.login}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                     <p><b>Senha Forte:</b> <span>${p.senhaForte}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                     <p><b>Senha Simples:</b> <span>${p.senhaSimples}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                    <p><b>Senha Saque:</b> <span>${p.senhaSaque}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
+                    <p><b>Saque:</b> <span>${p.senhaSaque}</span> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
                     <div style="display:flex; gap:10px; margin-top:10px">
                         <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="atualizar('${id}', 'mae', ${!p.mae})">${p.mae?'★ MÃE ATIVA':'MARCAR MÃE'}</button>
                         <button class="btn-del" onclick="excluir('${id}')">EXCLUIR</button>
@@ -103,30 +103,30 @@
 
         window.gerarPacote = async () => {
             const btn = document.getElementById("btnGerar");
-            btn.innerText = "VERIFICANDO..."; btn.disabled = true;
+            btn.innerText = "PROCESSANDO..."; btn.disabled = true;
 
             const gen = document.getElementById("generoGen").value;
             const listaN = gen === 'masculino' ? nomesM : nomesF;
             
-            let cpfUnico = false;
             let novoCpf;
-            while (!cpfUnico) {
+            let cpfUnico = false;
+            while(!cpfUnico){
                 novoCpf = gerarCpfReal();
                 const snap = await db.ref("pacotes").orderByChild("cpf").equalTo(novoCpf).once("value");
-                if (!snap.exists()) cpfUnico = true;
+                if(!snap.exists()) cpfUnico = true;
             }
 
-            const nomeComp = `${random(listaN)} ${random(sobrenomes)} ${random(sobrenomes)}`;
-            const login = nomeComp.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 9000);
+            const nomeFinal = `${random(listaN)} ${random(sobrenomes)} ${random(sobrenomes)}`;
+            const ddd = random(DDDs);
 
             const novo = {
-                nome: nomeComp,
+                nome: nomeFinal,
                 cpf: novoCpf,
-                telefone: "(51) 9" + Math.floor(10000000 + Math.random() * 90000000),
-                login: login,
-                senhaForte: gerarSenhaComplexa(true),
-                senhaSimples: gerarSenhaComplexa(false),
-                senhaSaque: Math.floor(100000 + Math.random() * 900000),
+                telefone: `(${ddd}) 9${Math.floor(10000000 + Math.random() * 90000000)}`,
+                login: nomeFinal.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 8999),
+                senhaForte: gerarSenha(12, true),
+                senhaSimples: gerarSenha(10, false),
+                senhaSaque: Math.floor(100000 + Math.random() * 899999),
                 banco: BANCOS[0],
                 mae: false
             };
@@ -136,47 +136,41 @@
         };
 
         window.exportarBanco = () => {
-            db.ref("pacotes").once("value", (snap) => {
-                const data = snap.val();
-                const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+            db.ref("pacotes").once("value", s => {
+                const blob = new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"});
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blob);
-                a.download = `backup_contas_${Date.now()}.json`;
-                a.click();
+                a.download = "backup.json"; a.click();
             });
         };
 
         window.importarBanco = (e) => {
             const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const dados = JSON.parse(event.target.result);
-                    const contas = dados.import_manual || dados;
-                    Object.keys(contas).forEach(k => db.ref("pacotes").push(contas[k]));
-                    alert("Importação Concluída!");
-                } catch(err) { alert("Erro no arquivo!"); }
+            reader.onload = (ev) => {
+                const dados = JSON.parse(ev.target.result);
+                const loop = dados.import_manual || dados;
+                Object.keys(loop).forEach(k => db.ref("pacotes").push(loop[k]));
+                alert("Importado!");
             };
             reader.readAsText(e.target.files[0]);
         };
 
-        window.atualizar = (id, campo, valor) => db.ref(`pacotes/${id}`).update({ [campo]: valor });
-        window.excluir = (id) => { if(confirm("Apagar conta?")) db.ref(`pacotes/${id}`).remove(); };
-        window.limparBanco = () => { if(confirm("Deseja apagar TUDO da nuvem?")) db.ref("pacotes").remove(); };
+        window.atualizar = (id, campo, valor) => db.ref(`pacotes/${id}`).update({[campo]: valor});
+        window.excluir = (id) => { if(confirm("Apagar?")) db.ref(`pacotes/${id}`).remove(); };
+        window.limparBanco = () => { if(confirm("Limpar tudo?")) db.ref("pacotes").remove(); };
     }
 
-    function gerarSenhaComplexa(comSimbolos) {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        const symbols = "!@#$%&*()_+-=";
-        const pool = comSimbolos ? chars + symbols : chars;
-        let pass = "";
-        const len = comSimbolos ? 12 : 10;
-        for (let i = 0; i < len; i++) pass += pool.charAt(Math.floor(Math.random() * pool.length));
-        return pass;
+    function gerarSenha(t, s) {
+        let c = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        if(s) c += "!@#$%&*";
+        let r = "";
+        for(let i=0; i<t; i++) r += c.charAt(Math.floor(Math.random()*c.length));
+        return r;
     }
 
     function gerarCpfReal() {
         const n = () => Math.floor(Math.random() * 9);
-        let n1=n(), n2=n(), n3=n(), n4=n(), n5=n(), n6=n(), n7=n(), n8=n(), n9=n();
+        let n1=n(),n2=n(),n3=n(),n4=n(),n5=n(),n6=n(),n7=n(),n8=n(),n9=n();
         let d1 = n9*2+n8*3+n7*4+n6*5+n5*6+n4*7+n3*8+n2*9+n1*10;
         d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0;
         let d2 = d1*2+n9*3+n8*4+n7*5+n6*6+n5*7+n4*8+n3*9+n2*10+n1*11;
@@ -184,15 +178,22 @@
         return `${n1}${n2}${n3}.${n4}${n5}${n6}.${n7}${n8}${n9}-${d1}${d2}`;
     }
 
-    function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function random(a) { return a[Math.floor(Math.random()*a.length)]; }
 
     function copiar(btn, tipo) {
-        let txt = btn.parentElement.querySelector("span").innerText;
-        if(tipo === 'CPF') txt = txt.replace(/\D/g, '');
-        navigator.clipboard.writeText(txt);
-        const original = btn.innerText;
-        btn.innerText = "OK";
-        setTimeout(() => btn.innerText = original, 800);
+        let t = btn.parentElement.querySelector("span").innerText;
+        
+        if (tipo === 'NOME') {
+            // Remove números e espaços no início (ex: "25 Manuel" vira "Manuel")
+            t = t.replace(/^\d+\s+/, '');
+        } else if (tipo === 'LIMPO') {
+            // Remove tudo que não for número (para CPF e Telefone)
+            t = t.replace(/\D/g, '');
+        }
+
+        navigator.clipboard.writeText(t);
+        const o = btn.innerText; btn.innerText = "OK";
+        setTimeout(() => btn.innerText = o, 800);
     }
 </script>
 </body>
