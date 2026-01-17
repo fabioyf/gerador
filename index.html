@@ -2,90 +2,163 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>GERADOR DARCK - NUVEM</title>
+    <title>GERADOR DARCK - FULL PROTECTED</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; padding: 20px; }
-        .controls { background: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; }
-        .pacote { background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #007bff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: #fff; padding: 20px; }
+        #bloqueio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; }
+        #conteudo { display: none; }
+        
+        .controls { background: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #333; }
+        .pacote { background: #252525; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 6px solid #007bff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .pacote.mae { border-left-color: #ff9800; background: #2d230b; }
-        p { margin: 8px 0; border-bottom: 1px solid #333; display: flex; align-items: center; }
-        button { cursor: pointer; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; }
+        
+        p { margin: 10px 0; border-bottom: 1px solid #333; padding-bottom: 6px; display: flex; align-items: center; font-size: 0.9rem; }
+        b { color: #007bff; min-width: 140px; display: inline-block; }
+        
+        button { cursor: pointer; border: none; border-radius: 5px; padding: 8px 14px; font-weight: bold; transition: 0.2s; }
         .btn-gen { background: #007bff; color: white; }
-        .btn-copy { background: #6c757d; color: white; margin-left: auto; }
-        .btn-del { background: #dc3545; color: white; margin-top: 10px; }
+        .btn-copy { background: #6c757d; color: white; margin-left: auto; font-size: 0.75rem; }
+        .btn-backup { background: #6f42c1; color: white; }
+        .btn-del { background: #dc3545; color: white; margin-top: 15px; width: 100%; }
+        
+        input, select { padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: white; }
+        #senhaInput { width: 250px; text-align: center; font-size: 1.1rem; border: 2px solid #007bff; }
     </style>
 </head>
 <body>
 
-    <h2>GERADOR DARCK - <span style="color: #28a745;">NUVEM ATIVA</span></h2>
-
-    <div class="controls">
-        <select id="genero" style="padding: 8px;">
-            <option value="masculino">Masculino</option>
-            <option value="feminino">Feminino</option>
-        </select>
-        <button class="btn-gen" onclick="gerar()">Gerar Novo</button>
-        <button onclick="limparBanco()" style="background:#444; color:white;">Limpar Nuvem</button>
+    <div id="bloqueio">
+        <h1 style="color:#007bff">DARCK METODOS</h1>
+        <p style="border:none">Sistema de Gerenciamento em Nuvem</p>
+        <input type="password" id="senhaInput" placeholder="Chave de Acesso">
+        <button class="btn-gen" style="margin-top:10px; width:250px" onclick="verificarSenha()">ACESSAR PAINEL</button>
+        <p id="erro" style="color: #dc3545; border: none; margin-top: 15px; font-weight:bold"></p>
     </div>
 
-    <div id="lista">Conectando ao Firebase...</div>
+    <div id="conteudo">
+        <h2>GERADOR DARCK <span style="color: #28a745; font-size: 0.8rem; border: 1px solid #28a745; padding: 2px 5px; border-radius: 4px;">NUVEM SINCRONIZADA</span></h2>
+
+        <div class="controls">
+            <select id="genero">
+                <option value="masculino">Masculino</option>
+                <option value="feminino">Feminino</option>
+                <option value="aleatorio">Aleatório</option>
+            </select>
+            <button class="btn-gen" onclick="gerar()">GERAR DADOS</button>
+            <button class="btn-backup" onclick="exportarBanco()">EXPORTAR BACKUP (.JSON)</button>
+            <button class="btn-backup" onclick="document.getElementById('fileIn').click()">IMPORTAR BACKUP</button>
+            <input type="file" id="fileIn" style="display:none" accept=".json" onchange="importarBanco(event)">
+            <button onclick="limparBanco()" style="background:#444; color:white;">LIMPAR NUVEM</button>
+            <button onclick="location.reload()" style="background:#222; color:#aaa">SAIR</button>
+        </div>
+
+        <div id="lista">Carregando dados...</div>
+    </div>
 
 <script>
-    // Conexão com o seu banco de dados
-    const firebaseConfig = {
-        databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" 
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const SENHA_MESTRA = "darck123"; // Sua senha de acesso
+    const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
 
-    // Sorteio de dados
-    const nomesM = ["Lucas", "Gabriel", "Matheus", "Pedro", "João", "Rafael", "Guilherme", "Vitor"];
-    const nomesF = ["Maria", "Ana", "Juliana", "Patrícia", "Camila", "Fernanda", "Beatriz", "Clara"];
-    const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Almeida"];
-
-    // Sincronização em tempo real
-    db.ref("pacotes").on("value", (snapshot) => {
-        const listaDiv = document.getElementById("lista");
-        listaDiv.innerHTML = "";
-        const data = snapshot.val();
-        if (data) {
-            Object.keys(data).reverse().forEach(id => {
-                const p = data[id];
-                const div = document.createElement("div");
-                div.className = `pacote ${p.mae ? 'mae' : ''}`;
-                div.innerHTML = `
-                    <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this, 'Nome')">Copiar</button></p>
-                    <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'CPF')">Copiar</button></p>
-                    <p><b>Senha:</b> <span>${p.senha}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
-                    <button style="background:${p.mae?'#ff9800':'#444'}; color:white;" onclick="toggleMae('${id}', ${p.mae})">
-                        ${p.mae ? 'Conta Mãe ✓' : 'Marcar como Mãe'}
-                    </button>
-                    <button class="btn-del" onclick="excluir('${id}')">Excluir</button>
-                `;
-                listaDiv.appendChild(div);
-            });
+    function verificarSenha() {
+        if (document.getElementById("senhaInput").value === SENHA_MESTRA) {
+            document.getElementById("bloqueio").style.display = "none";
+            document.getElementById("conteudo").style.display = "block";
+            iniciarSistema();
+        } else {
+            document.getElementById("erro").innerText = "ACESSO NEGADO!";
         }
-    });
+    }
 
-    function gerar() {
-        const gen = document.getElementById("genero").value;
-        const lista = gen === "masculino" ? nomesM : nomesF;
-        const novo = {
-            nome: `${lista[Math.floor(Math.random()*lista.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]}`,
-            cpf: Math.random().toString().slice(2,13).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"),
-            senha: Math.random().toString(36).slice(-8).toUpperCase(),
-            mae: false
+    document.getElementById("senhaInput").addEventListener("keyup", (e) => { if(e.key === "Enter") verificarSenha(); });
+
+    function iniciarSistema() {
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Banco de Nomes
+        const nomesM = ["Lucas", "Gabriel", "Matheus", "Pedro", "Rafael", "João", "Guilherme", "Gustavo", "Felipe", "Bruno", "Tiago", "Thiago", "Vitor", "Leonardo", "Eduardo"];
+        const nomesF = ["Maria", "Ana", "Juliana", "Patrícia", "Camila", "Fernanda", "Beatriz", "Letícia", "Larissa", "Aline", "Jéssica", "Bruna", "Amanda", "Vanessa"];
+        const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida", "Costa", "Gomes", "Martins"];
+
+        db.ref("pacotes").on("value", (snapshot) => {
+            const listaDiv = document.getElementById("lista");
+            listaDiv.innerHTML = "";
+            const data = snapshot.val();
+            if (data) {
+                Object.keys(data).reverse().forEach(id => {
+                    const p = data[id];
+                    const div = document.createElement("div");
+                    div.className = `pacote ${p.mae ? 'mae' : ''}`;
+                    div.innerHTML = `
+                        <p><b>Nome:</b> <span>${p.nome}</span> <button class="btn-copy" onclick="copiar(this, 'Nome')">Copiar</button></p>
+                        <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-copy" onclick="copiar(this, 'CPF')">Copiar</button></p>
+                        <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
+                        <p><b>Login:</b> <span>${p.login}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
+                        <p><b>Senha (Símbolos):</b> <span>${p.senhaForte}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
+                        <p><b>Senha (Letras/Núm):</b> <span>${p.senhaSimples}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
+                        <p><b>Senha Saque (6 Díg):</b> <span>${p.senhaSaque}</span> <button class="btn-copy" onclick="copiar(this, 'Outro')">Copiar</button></p>
+                        <div style="display:flex; gap:10px">
+                            <button style="flex:1; background:${p.mae?'#ff9800':'#444'}; color:white;" onclick="toggleMae('${id}', ${p.mae})">
+                                ${p.mae ? '★ CONTA MÃE ATIVA' : 'MARCAR COMO MÃE'}
+                            </button>
+                            <button class="btn-del" style="flex:1; margin:0" onclick="excluir('${id}')">EXCLUIR</button>
+                        </div>
+                    `;
+                    listaDiv.appendChild(div);
+                });
+            } else { listaDiv.innerHTML = "Nenhum dado na nuvem."; }
+        });
+
+        window.gerar = () => {
+            const gen = document.getElementById("genero").value;
+            let listaN = (gen === "feminino") ? nomesF : (gen === "masculino") ? nomesM : (Math.random() > 0.5 ? nomesM : nomesF);
+            const nomeFinal = `${listaN[Math.floor(Math.random()*listaN.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]}`;
+            
+            const novoPacote = {
+                nome: nomeFinal,
+                cpf: gerarCpf(),
+                telefone: "119" + Math.random().toString().slice(2,10),
+                login: nomeFinal.split(" ")[0].toLowerCase() + Math.floor(Math.random()*999),
+                senhaForte: Math.random().toString(36).slice(-8) + "!@#",
+                senhaSimples: Math.random().toString(36).slice(-10).toUpperCase(),
+                senhaSaque: Math.floor(100000 + Math.random() * 900000),
+                mae: false
+            };
+            db.ref("pacotes").push(novoPacote);
         };
-        db.ref("pacotes").push(novo);
+
+        window.toggleMae = (id, status) => db.ref("pacotes/" + id).update({ mae: !status });
+        window.excluir = (id) => { if(confirm("Excluir definitivamente?")) db.ref("pacotes/" + id).remove(); };
+        window.limparBanco = () => { if(confirm("Deseja APAGAR TUDO da nuvem?")) db.ref("pacotes").remove(); };
+
+        window.exportarBanco = () => {
+            db.ref("pacotes").once("value", (snapshot) => {
+                const blob = new Blob([JSON.stringify(snapshot.val(), null, 2)], { type: "application/json" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = `backup_darck_${Date.now()}.json`;
+                a.click();
+            });
+        };
+
+        window.importarBanco = (event) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const json = JSON.parse(e.target.result);
+                if(confirm("Adicionar dados do backup à nuvem?")) {
+                    Object.keys(json).forEach(k => db.ref("pacotes").push(json[k]));
+                }
+            };
+            reader.readAsText(event.target.files[0]);
+        };
     }
 
     function copiar(btn, tipo) {
         let texto = btn.parentElement.querySelector("span").innerText;
-        if (tipo === 'Nome') texto = texto.replace(/[0-9]/g, '').trim(); // Remove números do nome
-        if (tipo === 'CPF') texto = texto.replace(/\D/g, ''); // Remove pontos do CPF
+        if (tipo === 'Nome') texto = texto.replace(/[0-9]/g, '').trim();
+        if (tipo === 'CPF') texto = texto.replace(/\D/g, '');
         
         const el = document.createElement('textarea');
         el.value = texto;
@@ -94,13 +167,24 @@
         document.execCommand('copy');
         document.body.removeChild(el);
         
-        btn.innerText = "Copiado!";
-        setTimeout(() => btn.innerText = "Copiar", 1000);
+        const original = btn.innerText;
+        btn.innerText = "COPIADO!";
+        btn.style.background = "#28a745";
+        setTimeout(() => { btn.innerText = original; btn.style.background = "#6c757d"; }, 800);
     }
 
-    function toggleMae(id, status) { db.ref("pacotes/" + id).update({ mae: !status }); }
-    function excluir(id) { if(confirm("Excluir?")) db.ref("pacotes/" + id).remove(); }
-    function limparBanco() { if(confirm("Limpar TUDO?")) db.ref("pacotes").remove(); }
+    function gerarCpf() {
+        const r = () => Math.floor(Math.random() * 9);
+        const n = [r(),r(),r(),r(),r(),r(),r(),r(),r()];
+        const c = (t) => {
+            let s = 0;
+            for (let i = 0; i < t; i++) s += n[i] * ((t + 1) - i);
+            let res = (s * 10) % 11;
+            return res === 10 ? 0 : res;
+        };
+        n.push(c(9)); n.push(c(10));
+        return n.join('').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    }
 </script>
 </body>
 </html>
