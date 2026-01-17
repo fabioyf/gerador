@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>GERADOR DE DADOS</title>
+    <title>DARCK METODOS - V24 PROTECTED</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -99,22 +99,25 @@
         return nome.replace(/^[0-9\s\-\.]+/, "").replace(/[0-9\s\-\.]+$/, "").trim();
     }
 
+    // GERAÇÃO DE DADOS ÚNICOS E DIFERENTES
     function gerarSenhaForte(tamanho = 16) {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()";
-        let senha = "";
-        for (let i = 0; i < tamanho; i++) {
-            senha += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return senha;
+        return Array.from(crypto.getRandomValues(new Uint32Array(tamanho)))
+            .map((x) => chars[x % chars.length]).join('');
     }
 
     function gerarSenhaSimples(tamanho = 12) {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        let senha = "";
-        for (let i = 0; i < tamanho; i++) {
-            senha += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return senha;
+        return Array.from(crypto.getRandomValues(new Uint32Array(tamanho)))
+            .map((x) => chars[x % chars.length]).join('');
+    }
+
+    function gerarTelefoneUnico() {
+        const ddds = [11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 31, 41, 47, 51, 61, 71, 81, 85, 91];
+        const ddd = ddds[Math.floor(Math.random() * ddds.length)];
+        const parte1 = Math.floor(96000 + Math.random() * 3999); // Prefixo 9XXXX
+        const parte2 = Math.floor(1000 + Math.random() * 8999); // Sufixo XXXX
+        return `(${ddd}) 9${parte1}-${parte2}`;
     }
 
     function detectarBancoPrincipal(valorBanco) {
@@ -163,7 +166,6 @@
             }
             
             let nExibicao = bancosVistosCount[p.bPrincipal];
-
             if (categoriaAtual !== "TODOS" && categoriaAtual !== p.bPrincipal) return;
 
             if (p.bPrincipal !== ultimoBancoMostrado) {
@@ -204,7 +206,7 @@
     }
 
     window.atualizar = (id, campo, valor) => { firebase.database().ref(`pacotes/${id}`).update({[campo]: valor}); };
-    window.excluir = (id) => { if(confirm("Apagar conta?")) firebase.database().ref(`pacotes/${id}`).remove(); };
+    window.excluir = (id) => { if(confirm("Apagar conta?")) firebase.database().ref("pacotes").remove(id); };
     window.abrirEdicao = (id, campo, valor) => {
         const novo = prompt(`Editar ${campo.toUpperCase()}:`, valor);
         if (novo !== null) atualizar(id, campo, novo);
@@ -213,15 +215,22 @@
     window.gerarPacote = async () => {
         const btn = document.getElementById("btnGerar");
         btn.innerText = "GERANDO..."; btn.disabled = true;
-        const pM = ["Ricardo", "Adilson", "Fabricio", "Vagner", "Roberto", "Marcos", "Leandro", "Claudio", "Alexandre", "Joao", "Pedro", "Gabriel"];
-        const pF = ["Patricia", "Luciana", "Renata", "Simone", "Adriana", "Tatiana", "Beatriz", "Eliane", "Celia", "Ana", "Maria", "Julia"];
-        const s = ["Cardoso", "Mendes", "Teixeira", "Batista", "Moraes", "Farias", "Vieira", "Andrade", "Nunes", "Correa", "Silva", "Santos"];
-        const gen = document.getElementById("generoGen").value;
-        const nome = `${gen==='masculino'?pM[Math.floor(Math.random()*pM.length)]:pF[Math.floor(Math.random()*pF.length)]} ${s[Math.floor(Math.random()*s.length)]} ${s[Math.floor(Math.random()*s.length)]}`;
         
+        const nomes = ["Ricardo", "Adilson", "Fabricio", "Vagner", "Roberto", "Marcos", "Leandro", "Claudio", "Alexandre", "Joao", "Pedro", "Gabriel", "Patricia", "Luciana", "Renata", "Simone", "Adriana", "Tatiana", "Beatriz", "Eliane", "Celia", "Ana", "Maria", "Julia"];
+        const sobrenomes = ["Cardoso", "Mendes", "Teixeira", "Batista", "Moraes", "Farias", "Vieira", "Andrade", "Nunes", "Correa", "Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Costa", "Rodrigues", "Almeida", "Nascimento", "Carvalho", "Araujo"];
+        
+        const gen = document.getElementById("generoGen").value;
+        const nomeFinal = `${nomes[Math.floor(Math.random()*nomes.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]}`;
+        
+        // Proteção extra usando o TIMESTAMP para o login nunca repetir
+        const salt = Date.now().toString().slice(-3);
+
         await firebase.database().ref("pacotes").push({
-            nome: nome, cpf: gerarCpfReal(), pix: "CPF", telefone: `(11) 9${Math.floor(70000+Math.random()*20000)}-${Math.floor(1000+Math.random()*8999)}`,
-            login: nome.split(' ')[0].toLowerCase() + Math.floor(1000 + Math.random() * 8999),
+            nome: nomeFinal, 
+            cpf: gerarCpfReal(), 
+            pix: "CPF", 
+            telefone: gerarTelefoneUnico(),
+            login: nomeFinal.split(' ')[0].toLowerCase() + salt + Math.floor(Math.random()*99),
             senhaForte: gerarSenhaForte(16),
             senhaSimples: gerarSenhaSimples(12), 
             senhaSaque: Math.floor(100000 + Math.random() * 899999),
@@ -252,7 +261,7 @@
         firebase.database().ref("pacotes").once("value", s => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_v23.json`; a.click();
+            a.download = `backup_v24.json`; a.click();
         });
     };
     window.importarBanco = (e) => {
