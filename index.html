@@ -1,275 +1,555 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>GERADOR DE DADOS</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <style>
-        :root { --primary: #007bff; --bg: #0a0a0a; --card: #161616; --text: #eee; --green: #00ff41; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        #bloqueio { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-        #conteudo { display: none; max-width: 900px; margin: 0 auto; }
-        .header-stats { text-align: center; margin-bottom: 15px; }
-        .count-badge { background: var(--primary); color: white; padding: 8px 20px; border-radius: 50px; font-size: 1rem; font-weight: bold; display: inline-block; }
-        .tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 10px 0; border-bottom: 1px solid #222; }
-        .tab-btn { background: #222; color: #888; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
-        .controls { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #222; justify-content: center; margin-bottom: 20px; }
-        .pacote { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid var(--primary); position: relative; }
-        .pacote.mae { border-left-color: #ff9800; background: #221a05; }
-        .divisor-banco { background: #333; color: #fff; padding: 10px 15px; border-radius: 5px; margin: 25px 0 10px 0; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; }
-        .btn-bonus { position: absolute; top: 15px; right: 15px; background: #fff; color: #000; padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
-        .btn-bonus.coletado { background: #28a745; color: #fff; }
-        p { margin: 10px 0; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-        b { color: var(--primary); width: 130px; font-size: 0.75rem; text-transform: uppercase; }
-        span { font-family: monospace; font-size: 0.95rem; color: #fff; flex-grow: 1; word-break: break-all; }
-        button { cursor: pointer; border: none; border-radius: 6px; padding: 6px 10px; font-weight: bold; transition: 0.2s; font-size: 0.7rem; }
-        .btn-gen { background: var(--primary); color: white; padding: 12px 20px; font-size: 0.8rem; }
-        .btn-copy { background: #333; color: #ccc; }
-        .btn-edit { background: #222; color: #007bff; border: 1px solid #007bff33; }
-        .btn-del { background: #3d0000; color: #ff4d4d; }
-        select { padding: 8px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; cursor: pointer; font-size: 0.8rem; }
-        
-        /* Estilo da nova caixa de lembrete */
-        .input-lembrete {
-            background: transparent;
-            border: 1px solid var(--green);
-            color: var(--green);
-            border-radius: 4px;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            font-family: monospace;
-            width: 180px;
-            outline: none;
-        }
-        .input-lembrete:focus { background: rgba(0, 255, 65, 0.05); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CPA Control — Painel</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<style>
+:root{--bg:#030704;--panel:#080f0a;--panel2:#0d170f;--line:#173b25;--text:#eaffef;--muted:#8aa895;--cyan:#39ff88;--violet:#00d66b;--green:#39ff88;--red:#ff647c;--yellow:#ffd166;--radius:18px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% -10%,#07351a 0,transparent 38%),radial-gradient(ellipse at 95% 5%,#06401e 0,transparent 30%),var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,Segoe UI,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer;border:0;color:inherit}.app{max-width:1440px;margin:auto;padding:26px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:13px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#39ff88,#00a84f);display:grid;place-items:center;color:#071019;font-weight:900;font-size:19px;box-shadow:0 0 28px #39ff8850,0 0 55px #00d66b25}.brand h1{font-size:18px;margin:0;letter-spacing:.08em}.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:.13em}.top-right{display:flex;gap:9px;align-items:center}.pill{border:1px solid var(--line);border-radius:999px;padding:8px 12px;color:var(--muted);font-size:12px}.tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow:auto}.tab{background:transparent;color:var(--muted);padding:13px 17px;border-bottom:2px solid transparent;white-space:nowrap}.tab.active{color:var(--cyan);border-color:var(--cyan)}.view{display:none}.view.active{display:block}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}.card{background:linear-gradient(145deg,#0c1a10,#060b07);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 12px 35px #0002}.stat-label{color:var(--muted);font-size:12px}.stat-value{font-size:clamp(21px,3vw,30px);font-weight:750;letter-spacing:-.04em;margin:7px 0 2px}.stat-foot{color:var(--muted);font-size:11px}.positive{color:var(--green)!important}.negative{color:var(--red)!important}.accent-cyan{color:var(--cyan)}.accent-violet{color:var(--violet)}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 12px}.section-head h2{font-size:16px;margin:0}.section-head p{margin:3px 0 0;color:var(--muted);font-size:12px}.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center}.btn{padding:10px 14px;border-radius:11px;background:#102015;border:1px solid #1b4b2b;color:var(--text);font-weight:650;font-size:12px}.btn:hover{filter:brightness(1.15)}.btn.primary{background:linear-gradient(110deg,#39ff88,#00a84f);border:0;color:#06111b}.btn.danger{background:#351923;border-color:#633040;color:#ff9aaa}.btn.ghost{background:transparent}.field{background:#050a06;border:1px solid #1b4b2b;color:var(--text);border-radius:10px;padding:10px 11px;min-width:0;outline:none;width:100%}.field:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #39ff881c}.filters{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.filters .field{width:auto;min-width:150px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}.sheet{width:100%;border-collapse:collapse;min-width:760px}.sheet th,.sheet td{padding:12px 13px;border-bottom:1px solid #202a3a;text-align:left;white-space:nowrap}.sheet th{background:#102015;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.09em;position:sticky;top:0}.sheet td{font-size:12px}.sheet tr:last-child td{border-bottom:0}.sheet input,.sheet select{min-width:100px;max-width:150px;padding:8px;background:#050a06;border:1px solid #1b4b2b;color:var(--text);border-radius:8px}.sheet .money{font-variant-numeric:tabular-nums;font-weight:700}.empty{padding:30px;text-align:center;color:var(--muted)}.account-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.account{background:linear-gradient(145deg,#102015,#060b07);border:1px solid var(--line);border-radius:15px;padding:16px}.account-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.account h3{margin:0;font-size:14px}.tag{font-size:10px;border:1px solid #344258;border-radius:999px;padding:4px 8px;color:var(--muted)}.account-details{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}.detail{background:#050a06;border:1px solid #173b25;border-radius:999px;padding:9px}.detail small{display:block;color:var(--muted);font-size:10px}.detail strong{font-size:12px;word-break:break-word}.account-actions{display:flex;gap:7px;flex-wrap:wrap}.account-actions .btn{padding:7px 10px}.copy-btn{display:block;margin-top:7px;padding:5px 8px;font-size:10px;background:#0c2816;border-color:#237a40;color:#8dffb3}.copy-btn:disabled{opacity:.35;cursor:not-allowed}.modal-back{position:fixed;inset:0;background:#02050bd9;display:none;place-items:center;padding:16px;z-index:20}.modal-back.open{display:grid}.modal{width:min(560px,100%);background:#08130b;border:1px solid #334158;border-radius:18px;padding:20px;max-height:90vh;overflow:auto}.modal h2{margin:0 0 16px;font-size:17px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-group label{display:block;color:var(--muted);font-size:11px;margin:0 0 6px}.form-group.full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.hint{font-size:11px;color:var(--muted);margin-top:10px}.login{position:fixed;inset:0;z-index:30;background:#080a10;display:grid;place-items:center;padding:20px}.login-box{width:min(360px,100%);padding:28px;border:1px solid var(--line);border-radius:20px;background:#080f0a;text-align:center}.login-box h2{margin:0 0 5px}.login-box p{color:var(--muted);font-size:12px;margin:0 0 20px}.login-box .field{margin-bottom:10px}.toast{position:fixed;bottom:20px;right:20px;background:#1b2938;border:1px solid #3c526c;padding:12px 16px;border-radius:12px;display:none;z-index:40}.muted{color:var(--muted)}.range-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.range-row .field{width:auto;min-width:145px}.notice{border:1px solid #66522b;background:#211c12;color:#e9d39c;padding:12px 14px;border-radius:12px;font-size:11px;margin:14px 0}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.account-grid{grid-template-columns:1fr}}@media(max-width:560px){.app{padding:16px}.top{align-items:flex-start}.top-right{flex-direction:column;align-items:flex-end}.stats{gap:9px}.card{padding:14px}.stat-value{font-size:22px}.form-grid{grid-template-columns:1fr}.form-group.full{grid-column:auto}}
 
-        .bank-selector { color: #fff !important; font-weight: bold; width: 150px; }
-    </style>
+/* ===== CPA CONTROL | GAMER RGB PROFESSIONAL THEME ===== */
+:root{
+ --bg:#07090d;--panel:#0d1119;--panel2:#111827;--line:#263244;
+ --text:#edf4ff;--muted:#8e9bb0;--cyan:#35e7ff;--violet:#a879ff;
+ --green:#52ff9a;--red:#ff6685;--yellow:#ffd166;--radius:18px;
+ --rgb:linear-gradient(115deg,#35e7ff 0%,#7b61ff 25%,#ff4fd8 50%,#52ff9a 75%,#35e7ff 100%);
+}
+@keyframes rgb-flow{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes rgb-glow{0%,100%{box-shadow:0 0 9px #35e7ff30,0 0 22px #7b61ff18}50%{box-shadow:0 0 13px #ff4fd830,0 0 28px #52ff9a20}}
+@keyframes logo-hue{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
+@keyframes rgb-line{0%{background-position:0 0}100%{background-position:300% 0}}
+body{
+ background:
+  radial-gradient(ellipse at 8% 0%,#15364a55 0,transparent 34%),
+  radial-gradient(ellipse at 95% 8%,#34204e55 0,transparent 32%),
+  radial-gradient(ellipse at 50% 100%,#123b2a35 0,transparent 38%),#07090d;
+ background-attachment:fixed;
+}
+.app{max-width:1500px;padding:30px}
+.top{
+ position:relative;padding:17px 20px;margin-bottom:24px;border:1px solid transparent;
+ border-radius:20px;background:linear-gradient(120deg,#0e1420,#0a1018) padding-box;
+ box-shadow:0 14px 40px #0006,0 0 28px #35e7ff0b;
+}
+.top:before{
+ content:"";position:absolute;inset:-1px;border-radius:20px;padding:1px;
+ background:var(--rgb);background-size:220% 100%;animation:rgb-line 9s linear infinite;
+ -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+ -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+}
+.logo{
+ background:var(--rgb);background-size:250% 100%;animation:rgb-flow 7s linear infinite,logo-hue 18s linear infinite;
+ color:#061018;border-radius:14px;box-shadow:0 0 18px #35e7ff55,0 0 34px #a879ff35;
+}
+.brand h1{font-size:19px;letter-spacing:.12em}
+.brand small{letter-spacing:.18em;color:#9eacc2}
+.pill{background:#0b121c;border-color:#2a3a50;color:#b9c7da}
+#connection{box-shadow:inset 0 0 14px #52ff9a0b}
+.tabs{
+ gap:7px;padding:6px;border:1px solid #263244;border-radius:15px;
+ background:#0b111a;box-shadow:0 10px 28px #0004;
+}
+.tab{border:0;border-radius:10px;padding:12px 18px;transition:.2s ease}
+.tab:hover{color:#fff;background:#172233}
+.tab.active{
+ color:#07111b;background:var(--rgb);background-size:250% 100%;
+ animation:rgb-flow 8s linear infinite;font-weight:800;
+ box-shadow:0 0 18px #35e7ff30,0 0 24px #a879ff20;
+}
+.card,.account{
+ position:relative;overflow:hidden;
+ background:linear-gradient(145deg,#121a27 0%,#0b111a 72%);
+ border:1px solid #263449;box-shadow:0 14px 34px #0004;
+ transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.card:before,.account:before{
+ content:"";position:absolute;left:16px;right:16px;top:0;height:1px;
+ background:var(--rgb);background-size:220% 100%;opacity:.55;
+ animation:rgb-line 12s linear infinite;
+}
+.card:hover,.account:hover{
+ transform:translateY(-3px);border-color:#52617b;
+ box-shadow:0 18px 42px #0006,0 0 24px #35e7ff0c;
+}
+.stat-label{letter-spacing:.04em;text-transform:uppercase;font-size:10px;font-weight:750}
+.stat-value{font-variant-numeric:tabular-nums}
+.positive{color:#63ffad!important;text-shadow:0 0 18px #52ff9a20}
+.accent-cyan{color:#54eaff!important;text-shadow:0 0 18px #35e7ff22}
+.accent-violet{color:#b995ff!important;text-shadow:0 0 18px #a879ff22}
+.section-head h2{letter-spacing:.01em}
+.btn{
+ position:relative;overflow:hidden;background:linear-gradient(145deg,#172334,#101925);
+ border:1px solid #34445c;border-radius:11px;color:#eaf2ff;
+ transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.btn:hover{filter:none;transform:translateY(-1px);border-color:#6c7f9b;box-shadow:0 5px 18px #0005}
+.btn.primary{
+ color:#061018;background:var(--rgb);background-size:250% 100%;
+ border:0;animation:rgb-flow 9s linear infinite;font-weight:850;
+ box-shadow:0 0 16px #35e7ff28,0 0 24px #a879ff18;
+}
+.btn.primary:hover{box-shadow:0 0 22px #35e7ff48,0 0 34px #ff4fd826}
+.btn.ghost{background:transparent}
+.field{
+ background:#080e16;border:1px solid #2b3a50;color:#f0f5ff;
+ transition:border-color .18s ease,box-shadow .18s ease;
+}
+.field:focus{border-color:#35e7ff;box-shadow:0 0 0 3px #35e7ff19,0 0 18px #35e7ff12}
+.table-wrap{border-color:#2a384d;background:#0b111a}
+.sheet th{background:#141e2d;color:#aab9ce;border-bottom-color:#2b3a50}
+.sheet td{border-bottom-color:#202c3e}
+.sheet tr:hover td{background:#15203355}
+.sheet input,.sheet select{background:#080e16;border-color:#2b3a50}
+.account{border-radius:17px}
+.account h3{letter-spacing:.01em}
+.tag{border-color:#3a4b63;background:#121d2b;color:#b9c8dc}
+.detail{background:#080e16;border-color:#293a50}
+.copy-btn{background:#10251f;border-color:#287b61;color:#83ffd0}
+.modal{
+ background:linear-gradient(145deg,#121b29,#0a1019);
+ border-color:#40516a;box-shadow:0 24px 90px #000b,0 0 32px #35e7ff10;
+}
+.modal h2{letter-spacing:.02em}
+.login{background:radial-gradient(ellipse at 50% 35%,#172d4055,transparent 55%),#07090d}
+.login-box{
+ position:relative;background:linear-gradient(145deg,#121b29,#0a1019);
+ border:1px solid #34465e;box-shadow:0 25px 80px #0009,0 0 35px #35e7ff12;
+}
+.login-box:before{
+ content:"";position:absolute;inset:-1px;border-radius:20px;padding:1px;
+ background:var(--rgb);background-size:250% 100%;animation:rgb-line 9s linear infinite;
+ -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+ -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+}
+.notice{border-color:#685b38;background:#211d15;color:#e9d8ad}
+.toast{background:#142235;border-color:#405875;box-shadow:0 12px 36px #0008}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media(max-width:560px){
+ .app{padding:13px}.top{padding:14px}.brand h1{font-size:16px}
+ .tabs{border-radius:12px}.tab{padding:10px 13px}
+}
+
+
+/* Campos de cadastro manual */
+#accountCpf,#accountPhone{letter-spacing:.02em}
+</style>
 </head>
 <body>
-
-    <div id="bloqueio">
-        <h1 style="color:var(--primary)">LOGIN</h1>
-        <input type="password" id="senhaInput" placeholder="PIN" style="text-align:center">
-        <button class="btn-gen" style="margin-top:10px; width:180px" onclick="verificarSenha()">ENTRAR</button>
-    </div>
-
-    <div id="conteudo">
-        <div class="header-stats">
-            <div id="contador" class="count-badge">Contas na Nuvem: 0</div>
-        </div>
-        <div class="tabs-container" id="tabsCategorias"></div>
-        <div class="controls">
-            <select id="generoGen">
-                <option value="masculino">Masculino</option>
-                <option value="feminino">Feminino</option>
-            </select>
-            <button class="btn-gen" id="btnGerar" onclick="gerarPacote()">GERAR CONTA ÚNICA</button>
-            <button onclick="exportarBanco()" style="background:#444; color:white;">EXPORTAR</button>
-            <button onclick="document.getElementById('fileIn').click()" style="background:#444; color:white;">IMPORTAR</button>
-            <input type="file" id="fileIn" style="display:none" onchange="importarBanco(event)">
-            <button onclick="limparBanco()" style="background:#222; color:#777;">LIMPAR TUDO</button>
-        </div>
-        <div id="lista">Sincronizando Banco de Dados...</div>
-    </div>
-
+<div class="login" id="login">
+ <div class="login-box"><div class="logo" style="margin:0 auto 14px">C</div><h2>CPA CONTROL</h2><p>Acesso ao painel</p><input class="field" id="pin" type="password" placeholder="PIN de acesso" autocomplete="current-password"><button class="btn primary" style="width:100%" onclick="login()">ENTRAR</button><div class="hint">Altere o PIN padrão no código antes de usar.</div></div>
+</div>
+<div class="app" id="app" style="display:none">
+ <header class="top"><div class="brand"><div class="logo">C</div><div><h1>CPA CONTROL</h1><small>GESTÃO • PERFORMANCE • RESULTADOS</small></div></div><div class="top-right"><span class="pill" id="connection">Inicializando...</span><span class="pill" id="accountCount">0 contas</span></div></header>
+ <nav class="tabs"><button class="tab active" data-tab="dashboard">Visão geral</button><button class="tab" data-tab="finance">Financeiro</button><button class="tab" data-tab="accounts">Contas</button></nav>
+ <section class="view active" id="dashboard">
+  <div class="grid stats">
+   <div class="card"><div class="stat-label">Lucro hoje</div><div class="stat-value positive" id="todayProfit">R$ 0,00</div><div class="stat-foot">Resultado dos lançamentos de hoje</div></div>
+   <div class="card"><div class="stat-label">Lucro no mês</div><div class="stat-value" id="monthProfit">R$ 0,00</div><div class="stat-foot">Acumulado no mês atual</div></div>
+   <div class="card"><div class="stat-label">Depósitos no mês</div><div class="stat-value accent-cyan" id="monthDeposits">R$ 0,00</div><div class="stat-foot">Capital depositado no mês</div></div>
+   <div class="card"><div class="stat-label">Lucro acumulado</div><div class="stat-value accent-violet" id="allProfit">R$ 0,00</div><div class="stat-foot">Todos os lançamentos registrados</div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+   <div class="card"><div class="stat-label">Saldo final total — mês</div><div class="stat-value" id="monthFinal">R$ 0,00</div><div class="stat-foot">Soma dos saldos finais registrados no mês</div></div>
+   <div class="card"><div class="stat-label">Resultado de hoje</div><div class="stat-value" id="todaySummary">0 lançamentos</div><div class="stat-foot" id="todayDeposits">Depósitos: R$ 0,00</div></div>
+  </div>
+  <div class="section-head"><div><h2>Últimos lançamentos</h2><p>Atividade financeira recente</p></div><button class="btn" onclick="setTab('finance')">Abrir planilha →</button></div>
+  <div class="table-wrap"><table class="sheet"><thead><tr><th>Data</th><th>Conta</th><th>Depósito</th><th>Saldo final</th><th>Lucro</th></tr></thead><tbody id="recentRows"></tbody></table></div>
+ </section>
+ <section class="view" id="finance">
+  <div class="grid stats">
+   <div class="card"><div class="stat-label">Lucro do período</div><div class="stat-value" id="periodProfit">R$ 0,00</div><div class="stat-foot">Saldo final menos depósito</div></div>
+   <div class="card"><div class="stat-label">Total depositado</div><div class="stat-value accent-cyan" id="periodDeposits">R$ 0,00</div><div class="stat-foot">Soma do período selecionado</div></div>
+   <div class="card"><div class="stat-label">Saldo final</div><div class="stat-value" id="periodFinal">R$ 0,00</div><div class="stat-foot">Soma dos saldos finais</div></div>
+   <div class="card"><div class="stat-label">ROI do período</div><div class="stat-value accent-violet" id="periodRoi">0%</div><div class="stat-foot">Lucro ÷ depósitos</div></div>
+  </div>
+  <div class="card">
+   <div class="section-head" style="margin-top:0"><div><h2>Planilha de resultados</h2><p>Registre cada conta e acompanhe o resultado automaticamente</p></div><button class="btn primary" onclick="openEntry()">＋ Novo lançamento</button></div>
+   <div class="filters"><input class="field" type="date" id="fromDate"><input class="field" type="date" id="toDate"><input class="field" id="searchEntry" placeholder="Buscar conta / observação"><button class="btn" onclick="clearFilters()">Limpar filtros</button></div>
+   <div class="table-wrap"><table class="sheet"><thead><tr><th>Data</th><th>Conta / identificação</th><th>Depósito (R$)</th><th>Saldo final (R$)</th><th>Lucro (R$)</th><th>Observação</th><th>Ações</th></tr></thead><tbody id="entryRows"></tbody></table></div>
+   <p class="hint">Dica: cada linha representa o resultado de uma conta em uma data. Se operar várias contas no mesmo dia, registre uma linha para cada uma.</p>
+  </div>
+ </section>
+ <section class="view" id="accounts">
+  <div class="section-head"><div><h2>Gerenciador de contas</h2><p>Cadastre e acompanhe contas que você está autorizado a gerenciar</p></div><div class="toolbar"><button class="btn primary" onclick="openAccount()">＋ Adicionar conta</button><button class="btn" style="background:#1b382b;border-color:#2a754b;color:#39ff88;" onclick="generateRandomAccount()">⚡ Gerar Conta (Dados Irreais)</button><button class="btn" onclick="exportData()">Exportar backup</button><label class="btn" for="importFile">Importar</label><input id="importFile" type="file" accept="application/json" hidden onchange="importData(event)"></div></div>
+  <div class="notice">Use somente dados reais de contas que você está autorizado a administrar. CPF e telefone são preenchidos manualmente; o sistema não inventa documentos nem números de telefone. O PIN local não é autenticação segura: configure Firebase Authentication e regras do Realtime Database antes de armazenar dados pessoais.</div>
+  <div class="filters"><input class="field" id="searchAccount" placeholder="Buscar nome, banco, CPF ou telefone"><select class="field" id="bankFilter"><option value="">Todos os bancos</option><option>Nubank</option><option>Mercado Pago</option><option>PagBank</option><option>PicPay</option><option>Inter</option><option>C6 Bank</option><option>Caixa</option><option>Outros</option></select><button class="btn" onclick="openAccount()">Adicionar manualmente</button></div>
+  <div class="account-grid" id="accountCards"></div>
+ </section>
+</div>
+<div class="modal-back" id="entryModal"><div class="modal"><h2 id="entryTitle">Novo lançamento</h2><form id="entryForm"><input type="hidden" id="entryId"><div class="form-grid">
+ <div class="form-group"><label>Data</label><input class="field" type="date" id="entryDate" required></div>
+ <div class="form-group"><label>Conta / identificação</label><input class="field" id="entryAccount" placeholder="Ex.: Conta Nubank 01" required></div>
+ <div class="form-group"><label>Valor depositado (R$)</label><input class="field" type="number" id="entryDeposit" min="0" step="0.01" value="0" required></div>
+ <div class="form-group"><label>Saldo final (R$)</label><input class="field" type="number" id="entryFinal" min="0" step="0.01" value="0" required></div>
+ <div class="form-group full"><label>Observação</label><input class="field" id="entryNote" placeholder="Opcional"></div>
+ </div><div class="hint" id="entryCalc">Lucro estimado: R$ 0,00</div><div class="modal-actions"><button type="button" class="btn" onclick="closeModal('entryModal')">Cancelar</button><button class="btn primary" type="submit">Salvar lançamento</button></div></form></div></div>
+<div class="modal-back" id="accountModal"><div class="modal"><h2 id="accountTitle">Adicionar conta</h2><form id="accountForm"><input type="hidden" id="accountId"><div class="form-grid">
+ <div class="form-group"><label>Identificação / nome</label><input class="field" id="accountName" required placeholder="Nome ou apelido da conta"></div>
+ <div class="form-group"><label>Banco</label><select class="field" id="accountBank"><option value="Outros">Outros</option><option>Nubank</option><option>Mercado Pago</option><option>PagBank</option><option>PicPay</option><option>Inter</option><option>C6 Bank</option><option>Caixa</option></select></div>
+ <div class="form-group"><label>Login (opcional)</label><input class="field" id="accountLogin"></div>
+ <div class="form-group"><label>CPF</label><input class="field" id="accountCpf" inputmode="numeric" autocomplete="off" placeholder="Digite o CPF autorizado"></div>
+ <div class="form-group"><label>Telefone</label><input class="field" id="accountPhone" type="tel" inputmode="tel" autocomplete="off" placeholder="Digite o telefone autorizado"></div>
+ <div class="form-group"><label>Status</label><select class="field" id="accountStatus"><option>Ativa</option><option>Pausada</option><option>Bloqueada</option></select></div>
+ <div class="form-group"><label>Marcar como conta principal</label><select class="field" id="accountMain"><option value="false">Não</option><option value="true">Sim</option></select></div>
+ </div><div class="modal-actions"><button type="button" class="btn" style="color:var(--cyan);border-color:#1b4b2b" onclick="fillRandomFields()">⚡ Preencher Dados Irreais</button><button type="button" class="btn" onclick="closeModal('accountModal')">Cancelar</button><button class="btn primary" type="submit">Salvar conta</button></div></form></div></div>
+<div class="toast" id="toast"></div>
 <script>
-    const BANCOS_LISTA = ["Nubank", "Mercado Pago", "PagBank", "PicPay", "Inter", "C6 Bank", "Caixa"];
-    const SENHA_ACESSO = "2323";
-    const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
-    
-    let categoriaAtual = "TODOS";
-    let dadosGlobais = {};
+const PIN_ACESSO = "2323"; // Troque antes de usar. Não é autenticação de segurança.
+const firebaseConfig = { databaseURL: "https://gerador-by-darck-default-rtdb.firebaseio.com/" };
+const BANKS = ["Nubank","Mercado Pago","PagBank","PicPay","Inter","C6 Bank","Caixa","Outros"];
+let db=null, accounts={}, entries={}, connected=false;
+const $=id=>document.getElementById(id);
+const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const num=v=>Number.isFinite(Number(v))?Number(v):0;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const profit=e=>num(e.saldoFinal)-num(e.depositado);
+function toast(msg){const t=$("toast");t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",2600)}
+function login(){if($("pin").value===PIN_ACESSO){$("login").style.display="none";$("app").style.display="block";start()}else toast("PIN incorreto")}
+$("pin").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+function start(){
+ try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);db=firebase.database();
+ db.ref("pacotes").on("value",s=>{accounts=s.val()||{};renderAccounts();$("accountCount").textContent=Object.keys(accounts).length+" contas";$("connection").textContent="● Sincronizado";$("connection").style.color="var(--green)"},e=>{connectionError(e)});
+ db.ref("lancamentos_cpa").on("value",s=>{entries=s.val()||{};renderFinance();renderDashboard()},e=>connectionError(e));
+ }catch(e){connectionError(e)}
+}
+function connectionError(e){$("connection").textContent="Falha na conexão";$("connection").style.color="var(--red)";console.error(e);toast("Erro ao conectar ao Firebase. Verifique a configuração e as regras.") }
+function setTab(name){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===name));}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
+function allEntries(){return Object.entries(entries).map(([id,e])=>({id,...e,depositado:num(e.depositado),saldoFinal:num(e.saldoFinal),lucro:profit(e)})).sort((a,b)=>(b.data||"").localeCompare(a.data||""))}
+function inRange(e,from,to){return (!from||e.data>=from)&&(!to||e.data<=to)}
+function totals(list){return list.reduce((a,e)=>({dep:a.dep+e.depositado,final:a.final+e.saldoFinal,profit:a.profit+e.lucro}),{dep:0,final:0,profit:0})}
+function renderDashboard(){
+ const arr=allEntries(),today=todayISO(),month=today.slice(0,7),t=totals(arr.filter(e=>e.data===today)),m=totals(arr.filter(e=>(e.data||"").startsWith(month))),a=totals(arr);
+ $("todayProfit").textContent=money(t.profit);$("monthProfit").textContent=money(m.profit);$("monthDeposits").textContent=money(m.dep);$("allProfit").textContent=money(a.profit);$("monthFinal").textContent=money(m.final);$("todaySummary").textContent=arr.filter(e=>e.data===today).length+" lançamentos";$("todayDeposits").textContent="Depósitos: "+money(t.dep);
+ ["todayProfit","monthProfit","allProfit"].forEach(id=>{$(id).classList.toggle("positive",numText($(id).textContent)>=0);$(id).classList.toggle("negative",numText($(id).textContent)<0)});
+ $("recentRows").innerHTML=arr.slice(0,7).map(e=>`<tr><td>${esc(e.data||"—")}</td><td>${esc(e.conta||"—")}</td><td class="money">${money(e.depositado)}</td><td class="money">${money(e.saldoFinal)}</td><td class="money ${e.lucro>=0?"positive":"negative"}">${money(e.lucro)}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">Nenhum lançamento ainda.</td></tr>`;
+}
+function numText(s){return Number(String(s).replace(/[^\d,-]/g,"").replace(/\./g,"").replace(",", "."))||0}
+function renderFinance(){
+ const from=$("fromDate").value,to=$("toDate").value,q=$("searchEntry").value.trim().toLowerCase();
+ const arr=allEntries().filter(e=>inRange(e,from,to)&&(!q||`${e.conta} ${e.observacao||""}`.toLowerCase().includes(q))),t=totals(arr);
+ $("periodProfit").textContent=money(t.profit);$("periodDeposits").textContent=money(t.dep);$("periodFinal").textContent=money(t.final);$("periodRoi").textContent=t.dep?((t.profit/t.dep)*100).toLocaleString("pt-BR",{maximumFractionDigits:2})+"%":"—";
+ $("periodProfit").classList.toggle("positive",t.profit>=0);$("periodProfit").classList.toggle("negative",t.profit<0);
+ $("entryRows").innerHTML=arr.map(e=>`<tr><td>${esc(e.data||"")}</td><td>${esc(e.conta||"")}</td><td class="money">${money(e.depositado)}</td><td class="money">${money(e.saldoFinal)}</td><td class="money ${e.lucro>=0?"positive":"negative"}">${money(e.lucro)}</td><td>${esc(e.observacao||"—")}</td><td><button class="btn" onclick="editEntry('${esc(e.id)}')">Editar</button> <button class="btn danger" onclick="deleteEntry('${esc(e.id)}')">Excluir</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">Nenhum lançamento encontrado para este filtro.</td></tr>`;
+}
+["fromDate","toDate","searchEntry"].forEach(id=>$(id).addEventListener("input",renderFinance));
+function clearFilters(){$("fromDate").value="";$("toDate").value="";$("searchEntry").value="";renderFinance()}
+function openEntry(e=null){$("entryForm").reset();$("entryId").value=e?.id||"";$("entryTitle").textContent=e?"Editar lançamento":"Novo lançamento";$("entryDate").value=e?.data||todayISO();$("entryAccount").value=e?.conta||"";$("entryDeposit").value=e?.depositado??0;$("entryFinal").value=e?.saldoFinal??0;$("entryNote").value=e?.observacao||"";updateEntryCalc();$("entryModal").classList.add("open")}
+function editEntry(id){const e=entries[id];if(e)openEntry({id,...e})}
+function updateEntryCalc(){$("entryCalc").textContent="Lucro estimado: "+money(num($("entryFinal").value)-num($("entryDeposit").value))}
+$("entryDeposit").addEventListener("input",updateEntryCalc);$("entryFinal").addEventListener("input",updateEntryCalc);
+$("entryForm").addEventListener("submit",async e=>{e.preventDefault();const id=$("entryId").value;const data={data:$("entryDate").value,conta:$("entryAccount").value.trim(),depositado:num($("entryDeposit").value),saldoFinal:num($("entryFinal").value),observacao:$("entryNote").value.trim(),atualizadoEm:Date.now()};try{if(id)await db.ref("lancamentos_cpa/"+id).update(data);else await db.ref("lancamentos_cpa").push({...data,criadoEm:Date.now()});closeModal("entryModal");toast("Lançamento salvo.")}catch(err){toast("Não foi possível salvar o lançamento.");console.error(err)}});
+async function deleteEntry(id){if(confirm("Excluir este lançamento?"))try{await db.ref("lancamentos_cpa/"+id).remove();toast("Lançamento excluído.")}catch(e){toast("Erro ao excluir.")}}
+async function copyValue(encoded,label){
+ const value=decodeURIComponent(encoded);
+ try{
+  if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(value);
+  else {const el=document.createElement("textarea");el.value=value;el.style.position="fixed";el.style.opacity="0";document.body.appendChild(el);el.select();const ok=document.execCommand("copy");el.remove();if(!ok)throw Error("cópia indisponível");}
+  toast((label||"Informação").toUpperCase()+" copiado(a). ");
+ }catch(e){toast("Não foi possível copiar. Selecione e copie manualmente.");}
+}
 
-    function verificarSenha() {
-        if (document.getElementById("senhaInput").value === SENHA_ACESSO) {
-            document.getElementById("bloqueio").style.display = "none";
-            document.getElementById("conteudo").style.display = "block";
-            iniciarApp();
-        }
-    }
+const generatedCPFs = new Set();
+const generatedPhones = new Set();
+const generatedNames = new Set();
+const generatedLogins = new Set();
+const generatedStrongPass = new Set();
+const generatedWeakPass = new Set();
+const generatedPinPass = new Set();
 
-    function iniciarApp() {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        firebase.database().ref("pacotes").on("value", (snapshot) => {
-            dadosGlobais = snapshot.val() || {};
-            renderizarLista();
-        });
-    }
+function generateFakeCPF(){
+ const randDigit = () => Math.floor(Math.random() * 10);
+ let candidate = "";
+ do {
+  let n = Array.from({length: 9}, randDigit);
+  if (n.every(d => d === n[0])) continue;
 
-    function gerarTelefoneBrasil() {
-        const ddds = [11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99];
-        const ddd = ddds[Math.floor(Math.random() * ddds.length)];
-        const p1 = Math.floor(Math.random() * 9000) + 1000;
-        const p2 = Math.floor(Math.random() * 9000) + 1000;
-        return `(${ddd}) 9${p1}-${p2}`;
-    }
+  let d1 = n.reduce((acc, val, i) => acc + val * (10 - i), 0);
+  d1 = 11 - (d1 % 11);
+  if (d1 >= 10) d1 = 0;
+  n.push(d1);
 
-    function gerarSenhaForte(tamanho = 16) {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()";
-        let res = "";
-        const randomValues = new Uint32Array(tamanho);
-        window.crypto.getRandomValues(randomValues);
-        for (let i = 0; i < tamanho; i++) res += chars[randomValues[i] % chars.length];
-        return res;
-    }
+  let d2 = n.reduce((acc, val, i) => acc + val * (11 - i), 0);
+  d2 = 11 - (d2 % 11);
+  if (d2 >= 10) d2 = 0;
+  n.push(d2);
 
-    function gerarSenhaSimples(tamanho = 12) {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        let res = "";
-        const randomValues = new Uint32Array(tamanho);
-        window.crypto.getRandomValues(randomValues);
-        for (let i = 0; i < tamanho; i++) res += chars[randomValues[i] % chars.length];
-        return res;
-    }
+  const s = n.join('');
+  candidate = `${s.slice(0,3)}.${s.slice(3,6)}.${s.slice(6,9)}-${s.slice(9,11)}`;
+ } while (generatedCPFs.has(candidate));
+ 
+ generatedCPFs.add(candidate);
+ return candidate;
+}
 
-    // LÓGICA DE CATEGORIA FIXA PELO SELECT
-    function detectarBancoPrincipal(valorBanco) {
-        if (!valorBanco || valorBanco === "SELECIONE") return "Outros";
-        // Retorna o banco apenas se ele estiver na nossa lista oficial
-        for (let b of BANCOS_LISTA) { 
-            if (valorBanco === b) return b; 
-        }
-        return "Personalizado";
-    }
+function generateFakePhone(){
+ const ddds = ["11","19","21","27","31","41","48","51","61","71","81","85","91","92"];
+ let candidate = "";
+ do {
+  const ddd = ddds[Math.floor(Math.random() * ddds.length)];
+  let num = "9";
+  for(let i=0; i<8; i++){
+   num += Math.floor(Math.random() * 10);
+  }
+  candidate = `(${ddd}) ${num.slice(0,5)}-${num.slice(5)}`;
+ } while (generatedPhones.has(candidate));
 
-    function renderizarLista() {
-        const listaDiv = document.getElementById("lista");
-        const tabsDiv = document.getElementById("tabsCategorias");
-        const contadorDiv = document.getElementById("contador");
-        listaDiv.innerHTML = "";
-        
-        let counts = { TODOS: 0, Outros: 0, Personalizado: 0 };
-        BANCOS_LISTA.forEach(b => counts[b] = 0);
+ generatedPhones.add(candidate);
+ return candidate;
+}
 
-        let arrayContas = Object.keys(dadosGlobais).map(id => {
-            const p = dadosGlobais[id];
-            return { id, ...p, bPrincipal: detectarBancoPrincipal(p.banco) };
-        });
+function generateFakeLogin(nomeCompleto){
+ const removerAcentos = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+ const partes = nomeCompleto.trim().split(/\s+/).map(removerAcentos).filter(Boolean);
+ const pNome = partes[0] || "user";
+ const uSobrenome = partes[partes.length - 1] || "cpa";
+ 
+ let loginCandidate = "";
+ let tentativas = 0;
 
-        arrayContas.sort((a, b) => {
-            if (a.bPrincipal < b.bPrincipal) return -1;
-            if (a.bPrincipal > b.bPrincipal) return 1;
-            return b.id.localeCompare(a.id);
-        });
+ do {
+  tentativas++;
+  const numRand = Math.floor(100 + Math.random() * 9000);
+  if (tentativas % 4 === 1) {
+   loginCandidate = `${pNome}.${uSobrenome}${numRand}`;
+  } else if (tentativas % 4 === 2) {
+   loginCandidate = `${pNome[0]}${uSobrenome}${numRand}`;
+  } else if (tentativas % 4 === 3) {
+   loginCandidate = `${pNome}_${uSobrenome}${numRand}`;
+  } else {
+   loginCandidate = `${pNome}${uSobrenome.slice(0, 3)}${numRand}`;
+  }
+ } while (generatedLogins.has(loginCandidate));
 
-        arrayContas.forEach(p => { counts.TODOS++; counts[p.bPrincipal]++; });
-        contadorDiv.innerText = `Contas na Nuvem: ${counts.TODOS}`;
+ generatedLogins.add(loginCandidate);
+ return loginCandidate;
+}
 
-        let tabsHtml = `<button class="tab-btn ${categoriaAtual==='TODOS'?'active':''}" onclick="categoriaAtual='TODOS';renderizarLista()">TODOS <span>${counts.TODOS}</span></button>`;
-        BANCOS_LISTA.forEach(b => { if(counts[b] > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual===b?'active':''}" onclick="categoriaAtual='${b}';renderizarLista()">${b.toUpperCase()} <span>${counts[b]}</span></button>`; });
-        if(counts.Personalizado > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Personalizado'?'active':''}" onclick="categoriaAtual='Personalizado';renderizarLista()">PERS. <span>${counts.Personalizado}</span></button>`;
-        if(counts.Outros > 0) tabsHtml += `<button class="tab-btn ${categoriaAtual==='Outros'?'active':''}" onclick="categoriaAtual='Outros';renderizarLista()">NOVAS <span>${counts.Outros}</span></button>`;
-        tabsDiv.innerHTML = tabsHtml;
+function generateFakePassword(len=14, isStrong=true){
+ const targetSet = isStrong ? generatedStrongPass : generatedWeakPass;
+ let pass = "";
 
-        let bancosVistosCount = {};
-        let ultimoBancoMostrado = "";
+ if (!isStrong) {
+  const charsWeak = "abcdefghijklmnopqrstuvwxyz0123456789";
+  do {
+   pass = "";
+   for(let i=0; i<len; i++) pass += charsWeak.charAt(Math.floor(Math.random() * charsWeak.length));
+  } while (targetSet.has(pass));
+  targetSet.add(pass);
+  return pass;
+ }
 
-        arrayContas.forEach(p => {
-            if (!bancosVistosCount[p.bPrincipal]) bancosVistosCount[p.bPrincipal] = counts[p.bPrincipal];
-            else bancosVistosCount[p.bPrincipal]--;
-            
-            let nExibicao = bancosVistosCount[p.bPrincipal];
-            if (categoriaAtual !== "TODOS" && categoriaAtual !== p.bPrincipal) return;
+ const letrasMinusculas = "abcdefghijklmnopqrstuvwxyz";
+ const letrasMaiusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+ const numeros = "0123456789";
+ const simbolosEspeciais = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 
-            if (p.bPrincipal !== ultimoBancoMostrado) {
-                const divSep = document.createElement("div");
-                divSep.className = "divisor-banco";
-                divSep.innerHTML = `<span>${p.bPrincipal}</span> <span>Total: ${counts[p.bPrincipal]}</span>`;
-                listaDiv.appendChild(divSep);
-                ultimoBancoMostrado = p.bPrincipal;
-            }
+ do {
+  let arr = [
+   letrasMinusculas.charAt(Math.floor(Math.random() * letrasMinusculas.length)),
+   letrasMaiusculas.charAt(Math.floor(Math.random() * letrasMaiusculas.length)),
+   numeros.charAt(Math.floor(Math.random() * numeros.length)),
+   simbolosEspeciais.charAt(Math.floor(Math.random() * simbolosEspeciais.length)),
+   simbolosEspeciais.charAt(Math.floor(Math.random() * simbolosEspeciais.length))
+  ];
 
-            const div = document.createElement("div");
-            div.className = `pacote ${p.mae ? 'mae' : ''}`;
-            div.innerHTML = `
-                <div class="btn-bonus ${p.bonus ? 'coletado' : ''}" onclick="atualizar('${p.id}', 'bonus', ${!p.bonus})">BÔNUS</div>
-                <p><b>Banco:</b> 
-                    <select class="bank-selector" onchange="atualizar('${p.id}', 'banco', this.value)">
-                        <option value="SELECIONE" ${p.banco === 'SELECIONE' ? 'selected' : ''}>SELECIONE</option>
-                        ${BANCOS_LISTA.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('')}
-                    </select>
-                    <input type="text" class="input-lembrete" placeholder="Lembrete / Nota" 
-                        value="${p.lembrete || ''}" 
-                        onchange="atualizar('${p.id}', 'lembrete', this.value)">
-                </p>
-                <p><b>Nome:</b> <span>${nExibicao} ${p.nome}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'nome', '${p.nome}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>CPF:</b> <span>${p.cpf}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'cpf', '${p.cpf}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Telefone:</b> <span>${p.telefone}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'telefone', '${p.telefone}')">Edit</button> <button class="btn-copy" onclick="copiar(this, 'LIMPO')">Copiar</button></p>
-                <p><b>Login:</b> <span>${p.login}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'login', '${p.login}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Senha F:</b> <span style="color:#ff00ff">${p.senhaForte}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaForte', '${p.senhaForte}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Senha S:</b> <span style="color:#00ffff">${p.senhaSimples}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSimples', '${p.senhaSimples}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <p><b>Saque:</b> <span style="color:#ffff00">${p.senhaSaque}</span> <button class="btn-edit" onclick="abrirEdicao('${p.id}', 'senhaSaque', '${p.senhaSaque}')">Edit</button> <button class="btn-copy" onclick="copiar(this)">Copiar</button></p>
-                <div style="display:flex; gap:10px; margin-top:10px">
-                    <button style="flex:2; background:${p.mae?'#ff9800':'#333'}; color:white;" onclick="atualizar('${p.id}', 'mae', ${!p.mae})">${p.mae?'★ MÃE ATIVA':'MARCAR MÃE'}</button>
-                    <button class="btn-del" onclick="excluir('${p.id}')">EXCLUIR</button>
-                </div>`;
-            listaDiv.appendChild(div);
-        });
-    }
+  const todosCaracteres = letrasMinusculas + letrasMaiusculas + numeros + simbolosEspeciais;
+  while(arr.length < len) {
+   arr.push(todosCaracteres.charAt(Math.floor(Math.random() * todosCaracteres.length)));
+  }
 
-    window.atualizar = (id, campo, valor) => firebase.database().ref(`pacotes/${id}`).update({[campo]: valor});
-    window.excluir = (id) => { if(confirm("Deseja realmente apagar esta conta permanentemente?")) firebase.database().ref(`pacotes/${id}`).remove(); };
-    window.abrirEdicao = (id, campo, valor) => {
-        const novo = prompt(`Editar ${campo.toUpperCase()}:`, valor);
-        if (novo !== null) atualizar(id, campo, novo);
-    };
+  for (let i = arr.length - 1; i > 0; i--) {
+   const j = Math.floor(Math.random() * (i + 1));
+   [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
 
-    window.gerarPacote = async () => {
-        const btn = document.getElementById("btnGerar");
-        btn.innerText = "GERANDO..."; btn.disabled = true;
-        const nomesM = ["Ricardo", "Adilson", "Fabricio", "Vagner", "Roberto", "Marcos", "Leandro", "Claudio", "Alexandre", "Joao", "Pedro", "Gabriel"];
-        const nomesF = ["Patricia", "Luciana", "Renata", "Simone", "Adriana", "Tatiana", "Beatriz", "Eliane", "Celia", "Ana", "Maria", "Julia"];
-        const subs = ["Cardoso", "Mendes", "Teixeira", "Batista", "Moraes", "Farias", "Vieira", "Andrade", "Nunes", "Correa", "Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Costa", "Rodrigues", "Almeida"];
-        const gen = document.getElementById("generoGen").value;
-        const base = gen === 'masculino' ? nomesM : nomesF;
-        const nomeFinal = `${base[Math.floor(Math.random()*base.length)]} ${subs[Math.floor(Math.random()*subs.length)]} ${subs[Math.floor(Math.random()*subs.length)]}`;
-        
-        await firebase.database().ref("pacotes").push({
-            nome: nomeFinal, cpf: gerarCpfReal(), pix: "CPF", telefone: gerarTelefoneBrasil(),
-            login: nomeFinal.split(' ')[0].toLowerCase() + Math.floor(Math.random()*9999),
-            senhaForte: gerarSenhaForte(16), senhaSimples: gerarSenhaSimples(12), 
-            senhaSaque: Math.floor(100000 + Math.random() * 899999), banco: "SELECIONE", lembrete: "", mae: false, bonus: false
-        });
-        btn.innerText = "GERAR CONTA ÚNICA"; btn.disabled = false;
-    };
+  pass = arr.join('');
+ } while (targetSet.has(pass));
 
-    function gerarCpfReal() {
-        const n = () => Math.floor(Math.random() * 9);
-        let n1=n(),n2=n(),n3=n(),n4=n(),n5=n(),n6=n(),n7=n(),n8=n(),n9=n();
-        let d1 = 11 - ((n9*2+n8*3+n7*4+n6*5+n5*6+n4*7+n3*8+n2*9+n1*10) % 11); if (d1 >= 10) d1 = 0;
-        let d2 = 11 - ((d1*2+n9*3+n8*4+n7*5+n6*6+n5*7+n4*8+n3*9+n2*10+n1*11) % 11); if (d2 >= 10) d2 = 0;
-        return `${n1}${n2}${n3}.${n4}${n5}${n6}.${n7}${n8}${n9}-${d1}${d2}`;
-    }
+ targetSet.add(pass);
+ return pass;
+}
 
-    function copiar(btn, tipo) {
-        let span = btn.parentElement.querySelector("span");
-        let t = span.innerText;
-        if (span.parentElement.innerHTML.includes("Nome:")) t = t.replace(/^[0-9]+\s/, "");
-        if (tipo === 'LIMPO') t = t.replace(/\D/g, '');
-        navigator.clipboard.writeText(t);
-        const o = btn.innerText; btn.innerText = "OK";
-        setTimeout(() => btn.innerText = o, 800);
-    }
+function generateFakePin(){
+ let pin = "";
+ do {
+  pin = Math.floor(1000 + Math.random() * 9000).toString();
+ } while (generatedPinPass.has(pin));
 
-    window.exportarBanco = () => {
-        firebase.database().ref("pacotes").once("value", s => {
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(new Blob([JSON.stringify(s.val(),null,2)], {type:"application/json"}));
-            a.download = `backup_v25.json`; a.click();
-        });
-    };
-    window.importarBanco = (e) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const dados = JSON.parse(ev.target.result);
-            Object.keys(dados).forEach(k => firebase.database().ref("pacotes").push(dados[k]));
-        };
-        reader.readAsText(e.target.files[0]);
-    };
-    window.limparBanco = () => { if(confirm("Deseja apagar TUDO do banco de dados?")) firebase.database().ref("pacotes").remove(); };
+ generatedPinPass.add(pin);
+ return pin;
+}
+
+function generateFakeName(){
+ const primeiros = [
+  "Lucas", "Matheus", "Gabriel", "Rafael", "Bruno", "Thiago", "Rodrigo", "Felipe", "Guilherme", "Gustavo",
+  "Enzo", "Arthur", "Bernardo", "Heitor", "Davi", "Lorenzo", "Theo", "Pedro", "Benjamin", "Samuel",
+  "Caio", "Diego", "Eduardo", "Leonardo", "Marcelo", "Renan", "Vinicius", "Victor", "Igor", "Murilo",
+  "Alexandre", "André", "Benoît", "Carlos", "Daniel", "Erick", "Fernando", "Henrique", "João", "Luiz",
+  "Marcos", "Otávio", "Paulo", "Ricardo", "Sergio", "Vitor", "Yuri", "Cauã", "Ruan", "Augusto",
+  "Camila", "Larissa", "Amanda", "Letícia", "Beatriz", "Mariana", "Fernanda", "Juliana", "Vanessa", "Jessica",
+  "Sophia", "Alice", "Julia", "Isabella", "Manuela", "Laura", "Luiza", "Valentina", "Giovanna", "Helena",
+  "Carolina", "Gabriela", "Bianca", "Rafaela", "Bruna", "Natalia", "Priscila", "Tatiane", "Sabrina", "Vitoria",
+  "Clara", "Lívia", "Lorena", "Cecília", "Nicole", "Yasmin", "Isadora", "Rebeca", "Agatha", "Melissa"
+ ];
+
+ const sobrenomesBR = [
+  "Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes",
+  "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira", "Barbosa",
+  "Rocha", "Dias", "Nascimento", "Andrade", "Moreira", "Nunes", "Marques", "Machado", "Mendes", "Freitas",
+  "Cardoso", "Ramos", "Gonçalves", "Santana", "Teixeira", "Araújo", "Pires", "Melo", "Monteiro", "Moraes"
+ ];
+
+ const sobrenomesInternacionais = [
+  "Rossi", "Ferrari", "Esposito", "Bianchi", "Romano", "Colombo", "Ricci", "Marino", "Greco", "Bruno",
+  "Moretti", "Barbieri", "Lombardi", "Giordano", "Rinaldi", "Conti", "De Luca", "Mancini", "Rizzo", "Costa",
+  "Garcia", "Rodriguez", "Gonzalez", "Fernandez", "Lopez", "Martinez", "Sanchez", "Perez", "Gomez", "Torres",
+  "Diaz", "Hernandez", "Alvarez", "Romero", "Navarro", "Mendoza", "Ruiz", "Vargas", "Castro", "Ortiz",
+  "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker", "Hoffmann", "Schäfer",
+  "Koch", "Bauer", "Richter", "Klein", "Wolf", "Schröder", "Neumann", "Schwarz", "Zimmermann", "Braun",
+  "Sato", "Suzuki", "Takahashi", "Tanaka", "Watanabe", "Ito", "Yamamoto", "Nakamura", "Kobayashi", "Saito",
+  "Kato", "Yoshida", "Yamada", "Sasaki", "Yamaguchi", "Matsumoto", "Inoue", "Kimura", "Hayashi", "Shimizu",
+  "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit", "Durand", "Leroy", "Moreau", "Simon",
+  "Alves", "Haddad", "Mansour", "Khoury", "Nader", "Said", "Farah", "Rahal", "Assaf", "Maluf",
+  "Fontes", "Castelo", "Montenegro", "Siqueira", "Macedo", "Guedes", "Borges", "Resende", "Vianna", "Pacheco"
+ ];
+
+ let candidate = "";
+ let tentativas = 0;
+
+ do {
+  tentativas++;
+  const p = primeiros[Math.floor(Math.random() * primeiros.length)];
+  const qtdSobrenomes = Math.random() > 0.4 ? 2 : 3;
+  let sobrenomesEscolhidos = [];
+
+  for(let i = 0; i < qtdSobrenomes; i++){
+   const usarBR = Math.random() > 0.5;
+   const lista = usarBR ? sobrenomesBR : sobrenomesInternacionais;
+   let sob = lista[Math.floor(Math.random() * lista.length)];
+   while (sobrenomesEscolhidos.includes(sob)) {
+    sob = lista[Math.floor(Math.random() * lista.length)];
+   }
+   sobrenomesEscolhidos.push(sob);
+  }
+
+  candidate = `${p} ${sobrenomesEscolhidos.join(" ")}`;
+
+  if (tentativas > 100) {
+   const sufixos = ["Filho", "Junior", "Neto", "Sobrinho"];
+   const suf = sufixos[Math.floor(Math.random() * sufixos.length)];
+   candidate += ` ${suf}`;
+  }
+ } while (generatedNames.has(candidate));
+
+ generatedNames.add(candidate);
+ return candidate;
+}
+
+function fillRandomFields(){
+ const nome = generateFakeName();
+ $("accountName").value = nome;
+ const banks = ["Nubank","Mercado Pago","PagBank","PicPay","Inter","C6 Bank","Caixa"];
+ $("accountBank").value = banks[Math.floor(Math.random() * banks.length)];
+ $("accountLogin").value = generateFakeLogin(nome);
+ $("accountCpf").value = generateFakeCPF();
+ $("accountPhone").value = generateFakePhone();
+}
+
+async function generateRandomAccount(){
+ const nome = generateFakeName();
+ const banks = ["Nubank","Mercado Pago","PagBank","PicPay","Inter","C6 Bank","Caixa"];
+ const banco = banks[Math.floor(Math.random() * banks.length)];
+ const login = generateFakeLogin(nome);
+ const cpf = generateFakeCPF();
+ const telefone = generateFakePhone();
+ const senhaForte = generateFakePassword(14, true);
+ const senhaFraca = generateFakePassword(6, false);
+ const senhaSaque = generateFakePin();
+
+ const data = {
+  nome,
+  banco,
+  login,
+  cpf,
+  telefone,
+  status: "Ativa",
+  mae: false,
+  senhaForte,
+  senhaFraca,
+  senhaSaque,
+  tipoRegistro: "TESTE_SINTETICO",
+  criadoEm: Date.now(),
+  atualizadoEm: Date.now()
+ };
+
+ try {
+  if (db) {
+   await db.ref("pacotes").push(data);
+   toast("Conta com dados únicos criada com sucesso!");
+  } else {
+   toast("Erro: Conexão Firebase não pronta.");
+  }
+ } catch(e) {
+  console.error(e);
+  toast("Erro ao salvar conta irreal.");
+ }
+}
+
+function cpfTestFormat(){
+ let body="";for(let i=0;i<9;i++)body+=String(secureRandomInt(10));
+ let candidate=body+"00";
+ if(isValidCpf(candidate)) candidate=body+"01";
+ return candidate.slice(0,3)+"."+candidate.slice(3,6)+"."+candidate.slice(6,9)+"-"+candidate.slice(9);
+}
+function isValidCpf(v){
+ const d=String(v).replace(/\D/g,"");if(d.length!==11||/^(.)\1{10}$/.test(d))return false;
+ let sum=0;for(let i=0;i<9;i++)sum+=Number(d[i])*(10-i);let r=(sum*10)%11;if(r===10)r=0;if(r!==Number(d[9]))return false;
+ sum=0;for(let i=0;i<10;i++)sum+=Number(d[i])*(11-i);r=(sum*10)%11;if(r===10)r=0;return r===Number(d[10]);
+}
+function accountDisplayName(a){
+ return String(a.nome || "Conta sem nome").trim();
+}
+function renderAccounts(){
+ const q=$("searchAccount").value.toLowerCase(),bank=$("bankFilter").value;
+ const list=Object.entries(accounts).map(([id,a])=>({id,...a})).filter(a=>{
+  const searchable=`${accountDisplayName(a)} ${a.banco||""} ${a.login||""} ${a.cpf||""} ${a.telefone||""}`.toLowerCase();
+  return (!bank||a.banco===bank)&&(!q||searchable.includes(q));
+ });
+ $("accountCards").innerHTML=list.map(a=>{
+  const displayName=accountDisplayName(a);
+  const cpfDigits=String(a.cpf||"").replace(/\D/g,"");
+  const phoneDigits=String(a.telefone||"").replace(/\D/g,"");
+  return `<article class="account"><div class="account-top"><h3>${esc(displayName)}</h3><span class="tag">${esc(a.banco||"Outros")}</span></div><div class="account-details">
+  <div class="detail"><small>Login</small><strong>${esc(a.login||"Não informado")}</strong></div>
+  <div class="detail"><small>Status</small><strong>${esc(a.status||"Ativa")}</strong></div>
+  <div class="detail"><small>Principal</small><strong>${a.mae?"Sim":"Não"}</strong></div>
+  <div class="detail"><small>CPF</small><strong>${esc(a.cpf||"Não informado")}</strong><button class="btn copy-btn" ${cpfDigits?`onclick="copyValue('${encodeURIComponent(cpfDigits)}','CPF')"`:"disabled"}>Copiar CPF (só números)</button></div>
+  <div class="detail"><small>Telefone</small><strong>${esc(a.telefone||"Não informado")}</strong><button class="btn copy-btn" ${phoneDigits?`onclick="copyValue('${encodeURIComponent(phoneDigits)}','telefone')"`:"disabled"}>Copiar telefone (só números)</button></div>
+  <div class="detail"><small>Nome</small><strong>${esc(displayName)}</strong><button class="btn copy-btn" ${displayName?`onclick="copyValue('${encodeURIComponent(displayName)}','nome')"`:"disabled"}>Copiar nome</button></div>
+  <div class="detail"><small>Senha forte</small><strong>${esc(a.senhaForte||"—")}</strong><button class="btn copy-btn" ${a.senhaForte?`onclick="copyValue('${encodeURIComponent(String(a.senhaForte))}','senha forte')"`:"disabled"}>Copiar senha</button></div>
+  <div class="detail"><small>Senha fraca</small><strong>${esc(a.senhaFraca||"—")}</strong><button class="btn copy-btn" ${a.senhaFraca?`onclick="copyValue('${encodeURIComponent(String(a.senhaFraca))}','senha fraca')"`:"disabled"}>Copiar senha</button></div>
+  <div class="detail"><small>Senha de saque</small><strong>${esc(a.senhaSaque||"—")}</strong><button class="btn copy-btn" ${a.senhaSaque?`onclick="copyValue('${encodeURIComponent(String(a.senhaSaque))}','senha de saque')"`:"disabled"}>Copiar senha</button></div>
+  </div><div class="account-actions"><button class="btn" onclick="editAccount('${esc(a.id)}')">Editar</button><button class="btn" onclick="newEntryFor('${esc(displayName)}')">＋ Lançar resultado</button><button class="btn danger" onclick="deleteAccount('${esc(a.id)}')">Excluir</button></div></article>`;
+ }).join("")||`<div class="empty" style="grid-column:1/-1">Nenhuma conta encontrada. Adicione uma conta para começar.</div>`;
+}
+$("searchAccount").addEventListener("input",renderAccounts);$("bankFilter").addEventListener("change",renderAccounts);
+function openAccount(a=null){$("accountForm").reset();$("accountId").value=a?.id||"";$("accountTitle").textContent=a?"Editar conta":"Adicionar conta";$("accountName").value=a?.nome||"";$("accountBank").value=a?.banco||"Outros";$("accountLogin").value=a?.login||"";$("accountCpf").value=a?.cpf||"";$("accountPhone").value=a?.telefone||"";$("accountStatus").value=a?.status||"Ativa";$("accountMain").value=String(!!a?.mae);$("accountModal").classList.add("open")}
+function editAccount(id){const a=accounts[id];if(a)openAccount({id,...a})}
+function newEntryFor(name){openEntry();$("entryAccount").value=name;setTab("finance")}
+$("accountForm").addEventListener("submit",async e=>{e.preventDefault();const id=$("accountId").value;const cpf=$("accountCpf").value.trim();const telefone=$("accountPhone").value.trim();const data={nome:$("accountName").value.trim(),banco:$("accountBank").value,login:$("accountLogin").value.trim(),cpf,telefone,status:$("accountStatus").value,mae:$("accountMain").value==="true",atualizadoEm:Date.now()};try{if(id)await db.ref("pacotes/"+id).update(data);else await db.ref("pacotes").push({...data,bonus:false,criadoEm:Date.now()});closeModal("accountModal");toast("Conta salva.")}catch(err){toast("Não foi possível salvar a conta.");console.error(err)}});
+async function deleteAccount(id){if(confirm("Excluir esta conta? Os lançamentos financeiros não serão apagados."))try{await db.ref("pacotes/"+id).remove();toast("Conta excluída.")}catch(e){toast("Erro ao excluir.")}}
+function closeModal(id){$(id).classList.remove("open")}
+function exportData(){const payload={versao:2,exportadoEm:new Date().toISOString(),pacotes:accounts,lancamentos_cpa:entries};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cpa-control-backup.json";a.click();URL.revokeObjectURL(url)}
+function importData(ev){const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=async()=>{try{const data=JSON.parse(r.result);const ac=data.pacotes||data.accounts||data,fi=data.lancamentos_cpa||data.lancamentos||{};if(!ac||typeof ac!=="object"||Array.isArray(ac))throw Error("Formato inválido");if(!confirm("Importar e mesclar os dados? Registros existentes com a mesma chave serão atualizados."))return;await db.ref("pacotes").update(ac);if(fi&&typeof fi==="object")await db.ref("lancamentos_cpa").update(fi);toast("Backup importado.")}catch(e){toast("Arquivo inválido ou falha na importação.");console.error(e)}finally{ev.target.value=""}};r.readAsText(file)}
 </script>
 </body>
 </html>
