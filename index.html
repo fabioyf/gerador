@@ -14,13 +14,13 @@ button,input,select{font:inherit}button{cursor:pointer;border:0;color:inherit}.a
 
 /* ===== CPA CONTROL | GAMER RGB PROFESSIONAL THEME ===== */
 :root{
- --bg:#07090d;--panel:#0d1119;--panel2:#111827;--line:#263244;
- --text:#edf4ff;--muted:#8e9bb0;--cyan:#35e7ff;--violet:#a879ff;
- --green:#52ff9a;--red:#ff6685;--yellow:#ffd166;--radius:18px;
- --rgb:linear-gradient(115deg,#35e7ff 0%,#7b61ff 25%,#ff4fd8 50%,#52ff9a 75%,#35e7ff 100%);
+ --bg:#050805;--panel:#0b110b;--panel2:#101a10;--line:#244322;
+ --text:#efffee;--muted:#9bb49a;--cyan:#44d62c;--violet:#44d62c;
+ --green:#44d62c;--red:#ff6685;--yellow:#ffd166;--radius:18px;
+ --rgb:linear-gradient(115deg,#1f8f18 0%,#44d62c 45%,#7dff62 70%,#2bb51f 100%);
 }
 @keyframes rgb-flow{0%{background-position:0% 50%}100%{background-position:200% 50%}}
-@keyframes rgb-glow{0%,100%{box-shadow:0 0 9px #35e7ff30,0 0 22px #7b61ff18}50%{box-shadow:0 0 13px #ff4fd830,0 0 28px #52ff9a20}}
+@keyframes rgb-glow{0%,100%{box-shadow:0 0 9px #44d62c45,0 0 22px #44d62c20}50%{box-shadow:0 0 13px #7dff6230,0 0 28px #66e65320}}
 @keyframes logo-hue{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
 @keyframes rgb-line{0%{background-position:0 0}100%{background-position:300% 0}}
 body{
@@ -34,7 +34,7 @@ body{
 .top{
  position:relative;padding:17px 20px;margin-bottom:24px;border:1px solid transparent;
  border-radius:20px;background:linear-gradient(120deg,#0e1420,#0a1018) padding-box;
- box-shadow:0 14px 40px #0006,0 0 28px #35e7ff0b;
+ box-shadow:0 14px 40px #0006,0 0 28px #44d62c0b;
 }
 .top:before{
  content:"";position:absolute;inset:-1px;border-radius:20px;padding:1px;
@@ -44,22 +44,22 @@ body{
 }
 .logo{
  background:var(--rgb);background-size:250% 100%;animation:rgb-flow 7s linear infinite,logo-hue 18s linear infinite;
- color:#061018;border-radius:14px;box-shadow:0 0 18px #35e7ff55,0 0 34px #a879ff35;
+ color:#061006;border-radius:14px;box-shadow:0 0 18px #44d62c66,0 0 34px #44d62c35;
 }
 .brand h1{font-size:19px;letter-spacing:.12em}
 .brand small{letter-spacing:.18em;color:#9eacc2}
-.pill{background:#0b121c;border-color:#2a3a50;color:#b9c7da}
-#connection{box-shadow:inset 0 0 14px #52ff9a0b}
+.pill{background:#0b140b;border-color:#294629;color:#c0d8bd}
+#connection{box-shadow:inset 0 0 14px #66e6530b}
 .tabs{
  gap:7px;padding:6px;border:1px solid #263244;border-radius:15px;
- background:#0b111a;box-shadow:0 10px 28px #0004;
+ background:#0b140b;box-shadow:0 10px 28px #0004;
 }
 .tab{border:0;border-radius:10px;padding:12px 18px;transition:.2s ease}
-.tab:hover{color:#fff;background:#172233}
+.tab:hover{color:#fff;background:#172817}
 .tab.active{
  color:#07111b;background:var(--rgb);background-size:250% 100%;
  animation:rgb-flow 8s linear infinite;font-weight:800;
- box-shadow:0 0 18px #35e7ff30,0 0 24px #a879ff20;
+ box-shadow:0 0 18px #44d62c45,0 0 24px #44d62c25;
 }
 .card,.account{
  position:relative;overflow:hidden;
@@ -74,51 +74,51 @@ body{
 }
 .card:hover,.account:hover{
  transform:translateY(-3px);border-color:#52617b;
- box-shadow:0 18px 42px #0006,0 0 24px #35e7ff0c;
+ box-shadow:0 18px 42px #0006,0 0 24px #44d62c18;
 }
 .stat-label{letter-spacing:.04em;text-transform:uppercase;font-size:10px;font-weight:750}
 .stat-value{font-variant-numeric:tabular-nums}
-.positive{color:#63ffad!important;text-shadow:0 0 18px #52ff9a20}
-.accent-cyan{color:#54eaff!important;text-shadow:0 0 18px #35e7ff22}
-.accent-violet{color:#b995ff!important;text-shadow:0 0 18px #a879ff22}
+.positive{color:#63ffad!important;text-shadow:0 0 18px #66e65320}
+.accent-cyan{color:#66e653!important;text-shadow:0 0 18px #44d62c35}
+.accent-violet{color:#8af47d!important;text-shadow:0 0 18px #44d62c35}
 .section-head h2{letter-spacing:.01em}
 .btn{
  position:relative;overflow:hidden;background:linear-gradient(145deg,#172334,#101925);
  border:1px solid #34445c;border-radius:11px;color:#eaf2ff;
  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
 }
-.btn:hover{filter:none;transform:translateY(-1px);border-color:#6c7f9b;box-shadow:0 5px 18px #0005}
+.btn:hover{filter:none;transform:translateY(-1px);border-color:#5cae4d;box-shadow:0 5px 18px #0005}
 .btn.primary{
  color:#061018;background:var(--rgb);background-size:250% 100%;
  border:0;animation:rgb-flow 9s linear infinite;font-weight:850;
- box-shadow:0 0 16px #35e7ff28,0 0 24px #a879ff18;
+ box-shadow:0 0 16px #44d62c28,0 0 24px #44d62c18;
 }
-.btn.primary:hover{box-shadow:0 0 22px #35e7ff48,0 0 34px #ff4fd826}
+.btn.primary:hover{box-shadow:0 0 22px #44d62c48,0 0 34px #7dff6226}
 .btn.ghost{background:transparent}
 .field{
- background:#080e16;border:1px solid #2b3a50;color:#f0f5ff;
+ background:#080f08;border:1px solid #2b4529;color:#f0fff0;
  transition:border-color .18s ease,box-shadow .18s ease;
 }
-.field:focus{border-color:#35e7ff;box-shadow:0 0 0 3px #35e7ff19,0 0 18px #35e7ff12}
-.table-wrap{border-color:#2a384d;background:#0b111a}
-.sheet th{background:#141e2d;color:#aab9ce;border-bottom-color:#2b3a50}
-.sheet td{border-bottom-color:#202c3e}
-.sheet tr:hover td{background:#15203355}
-.sheet input,.sheet select{background:#080e16;border-color:#2b3a50}
+.field:focus{border-color:#44d62c;box-shadow:0 0 0 3px #44d62c20,0 0 18px #44d62c18}
+.table-wrap{border-color:#294629;background:#0b140b}
+.sheet th{background:#142014;color:#b4cbb0;border-bottom-color:#2b4529}
+.sheet td{border-bottom-color:#20351e}
+.sheet tr:hover td{background:#17281755}
+.sheet input,.sheet select{background:#080f08;border-color:#2b4529}
 .account{border-radius:17px}
 .account h3{letter-spacing:.01em}
-.tag{border-color:#3a4b63;background:#121d2b;color:#b9c8dc}
-.detail{background:#080e16;border-color:#293a50}
-.copy-btn{background:#10251f;border-color:#287b61;color:#83ffd0}
+.tag{border-color:#3a4b63;background:#142014;color:#c0d8bd}
+.detail{background:#080f08;border-color:#294629}
+.copy-btn{background:#102510;border-color:#3a8f2d;color:#a0ff91}
 .modal{
  background:linear-gradient(145deg,#121b29,#0a1019);
- border-color:#40516a;box-shadow:0 24px 90px #000b,0 0 32px #35e7ff10;
+ border-color:#40516a;box-shadow:0 24px 90px #000b,0 0 32px #44d62c10;
 }
 .modal h2{letter-spacing:.02em}
-.login{background:radial-gradient(ellipse at 50% 35%,#172d4055,transparent 55%),#07090d}
+.login{background:radial-gradient(ellipse at 50% 35%,#1d4a1855,transparent 55%),#050805}
 .login-box{
  position:relative;background:linear-gradient(145deg,#121b29,#0a1019);
- border:1px solid #34465e;box-shadow:0 25px 80px #0009,0 0 35px #35e7ff12;
+ border:1px solid #34465e;box-shadow:0 25px 80px #0009,0 0 35px #44d62c12;
 }
 .login-box:before{
  content:"";position:absolute;inset:-1px;border-radius:20px;padding:1px;
@@ -127,7 +127,7 @@ body{
  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
 }
 .notice{border-color:#685b38;background:#211d15;color:#e9d8ad}
-.toast{background:#142235;border-color:#405875;box-shadow:0 12px 36px #0008}
+.toast{background:#142414;border-color:#42633b;box-shadow:0 12px 36px #0008}
 @media(prefers-reduced-motion:reduce){
  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
@@ -139,6 +139,81 @@ body{
 
 /* Campos de cadastro manual */
 #accountCpf,#accountPhone{letter-spacing:.02em}
+
+/* ===== LOGIN RGB FLOW | efeitos leves e fluidos ===== */
+.login{
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 45%,#123b18 0%,#071108 42%,#030603 100%);
+}
+.login::after{
+  content:"";
+  position:absolute;
+  inset:-45%;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.24;
+  background:conic-gradient(from 0deg,
+    #ff1744,#ff9100,#ffee00,#39ff14,#00e5ff,#2979ff,
+    #d500f9,#ff1744);
+  filter:blur(95px);
+  animation:login-rgb-orbit 18s linear infinite;
+  will-change:transform;
+}
+.login-box{
+  z-index:1;
+  overflow:visible;
+  background:linear-gradient(145deg,rgba(13,25,14,.94),rgba(4,10,5,.96));
+  border-color:transparent;
+  box-shadow:0 24px 90px #000c,0 0 34px #44d62c22;
+  animation:login-card-float 6s ease-in-out infinite;
+}
+.login-box:before{
+  background:linear-gradient(115deg,
+    #ff1744 0%,#ff9100 16%,#ffee00 32%,#39ff14 48%,
+    #00e5ff 64%,#2979ff 80%,#d500f9 92%,#ff1744 100%);
+  background-size:300% 100%;
+  animation:rgb-line 5s linear infinite;
+  opacity:.95;
+}
+.login-box .logo{
+  animation:login-logo-hue 8s linear infinite, rgb-glow 2.8s ease-in-out infinite;
+  box-shadow:0 0 18px #44d62c55;
+}
+.login-box .field{
+  transition:border-color .22s ease,box-shadow .22s ease,background .22s ease;
+}
+.login-box .field:focus{
+  border-color:#44d62c;
+  box-shadow:0 0 0 3px #44d62c20,0 0 18px #44d62c24;
+}
+.login-box .btn,.login-box button{
+  transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+.login-box .btn:hover,.login-box button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.12);
+  box-shadow:0 0 20px #44d62c30;
+}
+@keyframes login-rgb-orbit{
+  from{transform:rotate(0deg) scale(1)}
+  to{transform:rotate(360deg) scale(1)}
+}
+@keyframes login-logo-hue{
+  from{filter:hue-rotate(0deg)}
+  to{filter:hue-rotate(360deg)}
+}
+@keyframes login-card-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .login::after,.login-box,.login-box:before,.login-box .logo{
+    animation:none!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -177,7 +252,7 @@ body{
   </div>
  </section>
  <section class="view" id="accounts">
-  <div class="section-head"><div><h2>Gerenciador de contas</h2><p>Cadastre e acompanhe contas que você está autorizado a gerenciar</p></div><div class="toolbar"><button class="btn primary" onclick="openAccount()">＋ Adicionar conta</button><button class="btn" style="background:#1b382b;border-color:#2a754b;color:#39ff88;" onclick="generateRandomAccount()">⚡ Gerar Conta (Dados Irreais)</button><button class="btn" onclick="exportData()">Exportar backup</button><label class="btn" for="importFile">Importar</label><input id="importFile" type="file" accept="application/json" hidden onchange="importData(event)"></div></div>
+  <div class="section-head"><div><h2>Gerenciador de contas</h2><p>Cadastre e acompanhe contas que você está autorizado a gerenciar</p></div><div class="toolbar"><button class="btn primary" onclick="openAccount()">＋ Adicionar conta</button><button class="btn" style="background:#183318;border-color:#39852d;color:#44d62c;" onclick="generateRandomAccount()">⚡ Gerar Conta (Dados Irreais)</button><button class="btn" onclick="exportData()">Exportar backup</button><label class="btn" for="importFile">Importar</label><input id="importFile" type="file" accept="application/json" hidden onchange="importData(event)"></div></div>
   <div class="notice">Use somente dados reais de contas que você está autorizado a administrar. CPF e telefone são preenchidos manualmente; o sistema não inventa documentos nem números de telefone. O PIN local não é autenticação segura: configure Firebase Authentication e regras do Realtime Database antes de armazenar dados pessoais.</div>
   <div class="filters"><input class="field" id="searchAccount" placeholder="Buscar nome, banco, CPF ou telefone"><select class="field" id="bankFilter"><option value="">Todos os bancos</option><option>Nubank</option><option>Mercado Pago</option><option>PagBank</option><option>PicPay</option><option>Inter</option><option>C6 Bank</option><option>Caixa</option><option>Outros</option></select><button class="btn" onclick="openAccount()">Adicionar manualmente</button></div>
   <div class="account-grid" id="accountCards"></div>
